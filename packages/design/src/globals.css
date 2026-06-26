@@ -1,0 +1,60 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+/*
+ * Faz o Tailwind escanear os componentes do design system. Sem isso, classes
+ * usadas só dentro de @cbrl/design (ex.: `bg-primary` no Button) não são
+ * geradas no CSS final dos apps consumidores — Tailwind v4 ignora
+ * node_modules/symlinks por padrão.
+ */
+@source './**/*.{ts,tsx}';
+
+@custom-variant dark (&:is(.dark *));
+
+@import './tokens.css';
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  /*
+   * Restore cursor:pointer on interactive elements — Tailwind v4 preflight
+   * removed the UA default to match macOS native, but on web it's expected
+   * behavior and case-by-case `cursor-pointer` rots fast. Disabled buttons and
+   * aria-disabled triggers keep the inherited default so the surface looks
+   * inert.
+   */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+  html {
+    /*
+     * Scrollbar sempre presente — evita layout shift entre páginas curtas e
+     * longas. (Movimentamos pro html porque o body recebe overflow:hidden
+     * quando overlays Radix abrem.)
+     */
+    overflow-y: scroll;
+  }
+}
+
+/*
+ * Neutraliza o shift de 15px do react-remove-scroll (lib usada por
+ * Dialog/DropdownMenu/Sheet/Toaster do Radix).
+ *
+ * Ao abrir, o Radix injeta uma stylesheet com `body[data-scroll-locked] {
+ * margin-right: <scrollbar-width>px !important }` pra compensar a remoção do
+ * scrollbar do body. Como nossa scrollbar mora no html (regra acima), nunca
+ * há barra no body pra compensar — mas a heurística da lib (innerWidth -
+ * documentElement.clientWidth) lê 15px mesmo assim e shifta o conteúdo.
+ *
+ * O `!important` aqui não é estilo — é o único jeito CSS de derrotar o
+ * `!important` upstream da lib.
+ */
+html body[data-scroll-locked] {
+  margin-right: 0 !important;
+}

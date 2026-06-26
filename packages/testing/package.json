@@ -1,0 +1,27 @@
+{
+  "name": "@cbrl/testing",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    "./firebase": "./src/firebase/index.ts",
+    "./vitest": "./src/vitest/index.ts",
+    "./vitest/server-only-shim": "./src/vitest/server-only-shim.ts",
+    "./a11y": "./src/vitest/a11y.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@cbrl/env": "workspace:*",
+    "jest-axe": "catalog:"
+  },
+  "devDependencies": {
+    "@cbrl/tsconfig-base": "workspace:*",
+    "@types/jest-axe": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

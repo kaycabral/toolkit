@@ -1,0 +1,11 @@
+{
+  "name": "@cbrl/tsconfig-base",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "description": "Canonical TypeScript compiler options shared by every app/package in the cbrl monorepo. Consumed via tsconfig `extends`.",
+  "files": [
+    "base.json"
+  ],
+  "main": "base.json"
+}

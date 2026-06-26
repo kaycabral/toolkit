@@ -1,0 +1,229 @@
+'use client'
+
+import { cva, type VariantProps } from 'class-variance-authority'
+import * as React from 'react'
+
+import { cn } from '../lib/cn'
+import { Label } from './label'
+import { Separator } from './separator'
+
+function FieldSet({ className, ...props }: React.ComponentProps<'fieldset'>) {
+  return (
+    <fieldset
+      data-slot="field-set"
+      className={cn(
+        'flex flex-col gap-4 has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+function FieldLegend({
+  className,
+  variant = 'legend',
+  ...props
+}: React.ComponentProps<'legend'> & { variant?: 'legend' | 'label' }) {
+  return (
+    <legend
+      data-slot="field-legend"
+      data-variant={variant}
+      className={cn(
+        'mb-3 font-medium data-[variant=label]:text-sm data-[variant=legend]:text-base',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="field-group"
+      className={cn(
+        // cbrl: gap-6 (24px) instead of shadcn's gap-7 — denser forms read
+        // better with our smaller (h-8) inputs.
+        'group/field-group @container/field-group flex w-full flex-col gap-6 data-[slot=checkbox-group]:gap-3 [&>[data-slot=field-group]]:gap-4',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+const fieldVariants = cva('group/field data-[invalid=true]:text-destructive flex w-full gap-3', {
+  variants: {
+    orientation: {
+      vertical: 'flex-col [&>*]:w-full [&>.sr-only]:w-auto',
+      horizontal: [
+        'flex-row items-center',
+        '[&>[data-slot=field-label]]:flex-auto',
+        'has-[>[data-slot=field-content]]:items-start has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio],[data-slot=switch]]:mt-px',
+      ],
+      responsive: [
+        'flex-col @md/field-group:flex-row @md/field-group:items-center [&>*]:w-full @md/field-group:[&>*]:w-auto [&>.sr-only]:w-auto',
+        '@md/field-group:[&>[data-slot=field-label]]:flex-auto',
+      ],
+    },
+  },
+  defaultVariants: { orientation: 'vertical' },
+})
+
+function Field({
+  className,
+  orientation = 'vertical',
+  ...props
+}: React.ComponentProps<'div'> & VariantProps<typeof fieldVariants>) {
+  return (
+    <div
+      role="group"
+      data-slot="field"
+      data-orientation={orientation}
+      className={cn(fieldVariants({ orientation }), className)}
+      {...props}
+    />
+  )
+}
+
+function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="field-content"
+      className={cn('group/field-content flex flex-1 flex-col gap-1.5 leading-snug', className)}
+      {...props}
+    />
+  )
+}
+
+function FieldLabel({
+  className,
+  required,
+  children,
+  ...props
+}: React.ComponentProps<typeof Label> & { required?: boolean }) {
+  return (
+    <Label
+      data-slot="field-label"
+      className={cn(
+        'group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md',
+        className,
+      )}
+      {...props}
+    >
+      {required ? (
+        <span className="inline-flex items-center gap-1.5">
+          {children}
+          <span aria-hidden className="text-destructive">
+            *
+          </span>
+        </span>
+      ) : (
+        children
+      )}
+    </Label>
+  )
+}
+
+// Shares data-slot="field-label" with FieldLabel on purpose: the horizontal
+// `fieldVariants` layout targets `[&>[data-slot=field-label]]`, so a title and a
+// real label must both opt into that rule. Not a copy-paste bug — keep aligned.
+function FieldTitle({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="field-label"
+      className={cn(
+        'flex w-fit items-center gap-2 text-sm leading-snug font-medium group-data-[disabled=true]/field:opacity-50',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+function FieldDescription({ className, ...props }: React.ComponentProps<'p'>) {
+  return (
+    <p
+      data-slot="field-description"
+      className={cn(
+        // cbrl convention: descriptions are text-xs (smaller than shadcn's
+        // text-sm default) for a tighter, consistent helper-text size.
+        'text-muted-foreground text-xs leading-normal font-normal group-has-[[data-orientation=horizontal]]/field:text-balance',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+function FieldSeparator({ children, className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="field-separator"
+      data-content={!!children}
+      className={cn(
+        'relative -my-2 h-5 text-sm group-data-[variant=outline]/field-group:-mb-2',
+        className,
+      )}
+      {...props}
+    >
+      <Separator className="absolute inset-0 top-1/2" />
+      {children ? (
+        <span
+          className="bg-background text-muted-foreground relative mx-auto block w-fit px-2"
+          data-slot="field-separator-content"
+        >
+          {children}
+        </span>
+      ) : null}
+    </div>
+  )
+}
+
+function FieldError({
+  className,
+  children,
+  errors,
+  ...props
+}: React.ComponentProps<'div'> & {
+  errors?: Array<{ message?: string } | undefined>
+}) {
+  const content = React.useMemo(() => {
+    if (children) return children
+    if (!errors) return null
+    const list = errors.filter(Boolean) as Array<{ message?: string }>
+    if (list.length === 1 && list[0]?.message) return list[0].message
+    return (
+      <ul className="ml-4 flex list-disc flex-col gap-1">
+        {list.map((e, i) => (e?.message ? <li key={i}>{e.message}</li> : null))}
+      </ul>
+    )
+  }, [children, errors])
+
+  if (!content) return null
+
+  return (
+    <div
+      role="alert"
+      data-slot="field-error"
+      className={cn('text-destructive text-sm font-normal', className)}
+      {...props}
+    >
+      {content}
+    </div>
+  )
+}
+
+export {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSeparator,
+  FieldSet,
+  FieldTitle,
+}
