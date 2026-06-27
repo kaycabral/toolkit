@@ -28,6 +28,43 @@ import { Pool, type PoolConfig } from 'pg'
 const POOL_MAX = 5
 const POOL_IDLE_MS = 600_000
 
+/**
+ * Attach the REQUIRED idle-client error handler to a `pg` Pool.
+ *
+ * `pg` emits `'error'` on the Pool when an IDLE client's connection drops on the
+ * server side — Cloud SQL recycling a connection (maintenance/failover/idle
+ * timeout), or the ephemeral test Postgres being torn down (`57P01`, "terminating
+ * connection due to administrator command"). This is asynchronous: it is NOT
+ * thrown from a query the app awaited, so a try/catch can't see it. With NO
+ * listener, Node escalates the emitted error to an `uncaughtException` and KILLS
+ * THE PROCESS — the whole server falls over on a single recycled idle connection.
+ *
+ * The handler logs and SWALLOWS: the pool already discards the failed client, and
+ * the next `pool.query`/`connect` transparently opens a fresh one, so the dropped
+ * idle connection is fully recoverable — there is nothing to do but not die. This
+ * is the canonical `node-postgres` guidance (its docs show exactly this listener).
+ */
+function attachPoolErrorHandler(pool: Pool, database: string): Pool {
+  pool.on('error', (err) => {
+    // `pg` surfaces the SQLSTATE on `DatabaseError.code` (e.g. 57P01); the event
+    // callback only types `err` as Error, so read `code` through a narrowing guard
+    // (no unsafe assertion) and tolerate its absence.
+    const code = 'code' in err && typeof err.code === 'string' ? err.code : undefined
+    // Structured stderr line; never rethrow (rethrowing here re-escalates to
+    // uncaughtException — the very crash this guards against).
+    console.error(
+      JSON.stringify({
+        level: 'error',
+        event: 'pg_pool_idle_client_error',
+        database,
+        message: err.message,
+        code,
+      }),
+    )
+  })
+  return pool
+}
+
 /** Inputs that vary per database; everything else is shared policy. */
 export type PoolEnvConfig = {
   /**
@@ -67,11 +104,14 @@ function iamEnabled(cfg: PoolEnvConfig): boolean {
 
 /** Build the password-mode pool (plain connection string). Always synchronous. */
 function createPasswordPool(cfg: PoolEnvConfig): ManagedPool {
-  const pool = new Pool({
-    connectionString: requireEnv(cfg.connectionStringEnvVar),
-    max: POOL_MAX,
-    idleTimeoutMillis: POOL_IDLE_MS,
-  })
+  const pool = attachPoolErrorHandler(
+    new Pool({
+      connectionString: requireEnv(cfg.connectionStringEnvVar),
+      max: POOL_MAX,
+      idleTimeoutMillis: POOL_IDLE_MS,
+    }),
+    cfg.database,
+  )
   return { pool, close: () => pool.end() }
 }
 
@@ -89,13 +129,16 @@ export async function createManagedPool(cfg: PoolEnvConfig): Promise<ManagedPool
     authType: AuthTypes.IAM,
     ipType: IpAddressTypes.PRIVATE,
   })
-  const pool = new Pool({
-    ...(clientOpts as PoolConfig),
-    user: requireEnv(cfg.iamUserEnvVar),
-    database: cfg.database,
-    max: POOL_MAX,
-    idleTimeoutMillis: POOL_IDLE_MS,
-  } satisfies PoolConfig)
+  const pool = attachPoolErrorHandler(
+    new Pool({
+      ...(clientOpts as PoolConfig),
+      user: requireEnv(cfg.iamUserEnvVar),
+      database: cfg.database,
+      max: POOL_MAX,
+      idleTimeoutMillis: POOL_IDLE_MS,
+    } satisfies PoolConfig),
+    cfg.database,
+  )
   return {
     pool,
     close: async () => {
