@@ -26,7 +26,14 @@ vi.mock('@google-cloud/cloud-sql-connector', () => ({
   },
 }))
 
-import { createManagedPool, createManagedPoolSync, type PoolEnvConfig } from './index'
+import {
+  closeManagedPool,
+  createManagedPool,
+  createManagedPoolSync,
+  getOrCreateManagedPoolSync,
+  initManagedPool,
+  type PoolEnvConfig,
+} from './index'
 
 const CFG: PoolEnvConfig = {
   connectionStringEnvVar: 'TEST_DATABASE_URL',
@@ -147,5 +154,70 @@ describe('createManagedPool (async)', () => {
     process.env.TEST_USE_IAM_AUTH = 'true'
     delete process.env.TEST_CLOUDSQL_INSTANCE
     await expect(createManagedPool(CFG)).rejects.toThrow()
+  })
+})
+
+// The prod signup-500 regression. Under the Next standalone build Turbopack
+// duplicates the consumer's `pool.ts` across the instrumentation entry and the
+// route entries, so a module-level `let managed` splits: boot fills one copy,
+// requests read the other (undefined) and fall through to the sync builder —
+// which THROWS under IAM. The registry lives on `globalThis` (one per process),
+// so the boot-opened pool is visible to every copy. These tests exercise that
+// contract directly (module duplication reduces to: does the getter read what
+// init wrote, via shared global state).
+describe('managed-pool registry (globalThis singleton — signup-500 fix)', () => {
+  afterEach(async () => {
+    // Drop the registered pool so each test starts clean (the registry is
+    // process-global by design).
+    await closeManagedPool(CFG).catch(() => undefined)
+    delete process.env.TEST_USE_IAM_AUTH
+  })
+
+  it('under IAM, initManagedPool() at boot lets the sync getter return WITHOUT throwing', async () => {
+    process.env.TEST_USE_IAM_AUTH = 'true'
+    // Sanity: without boot init, the sync getter throws (the exact prod symptom).
+    expect(() => getOrCreateManagedPoolSync(CFG)).toThrow(/requires async init/)
+    // Boot init opens the pool via the async connector and registers it.
+    await initManagedPool(CFG)
+    // Now the sync getter — as called from a request handler, even a duplicated
+    // module copy — reads the registry and never reaches the throw.
+    const first = getOrCreateManagedPoolSync(CFG)
+    expect(first.pool).toBeDefined()
+    // Idempotent + identity-stable: same pool instance every time.
+    expect(getOrCreateManagedPoolSync(CFG)).toBe(first)
+  })
+
+  it('initManagedPool() is idempotent (a second boot call is a no-op)', async () => {
+    await initManagedPool(CFG)
+    const p1 = getOrCreateManagedPoolSync(CFG)
+    await initManagedPool(CFG)
+    expect(getOrCreateManagedPoolSync(CFG)).toBe(p1)
+  })
+
+  it('password mode: sync getter lazily builds and registers the pool (no boot needed)', () => {
+    const p = getOrCreateManagedPoolSync(CFG)
+    expect(p.pool).toBeDefined()
+    expect(getOrCreateManagedPoolSync(CFG)).toBe(p)
+  })
+
+  it('closeManagedPool() removes it so the next get rebuilds', async () => {
+    const p1 = getOrCreateManagedPoolSync(CFG)
+    await closeManagedPool(CFG)
+    expect(poolEnd).toHaveBeenCalled()
+    const p2 = getOrCreateManagedPoolSync(CFG)
+    expect(p2).not.toBe(p1)
+  })
+
+  it('closeManagedPool() is a no-op when nothing is registered', async () => {
+    await expect(closeManagedPool(CFG)).resolves.toBeUndefined()
+    expect(poolEnd).not.toHaveBeenCalled()
+  })
+
+  it('reuses the same registry across separate calls (globalThis is not re-created)', () => {
+    // Second registry access must hit the `??=` already-present branch, not a
+    // fresh Map — else pools opened at boot would vanish between calls.
+    const p1 = getOrCreateManagedPoolSync(CFG)
+    const p2 = getOrCreateManagedPoolSync(CFG)
+    expect(p2).toBe(p1)
   })
 })

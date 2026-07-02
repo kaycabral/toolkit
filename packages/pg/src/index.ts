@@ -98,6 +98,32 @@ export type ManagedPool = {
   readonly close: () => Promise<void>
 }
 
+/**
+ * Process-wide registry of open pools, keyed by logical database name.
+ *
+ * WHY `globalThis` and not a module-level `let`: under the Next standalone
+ * build, Turbopack code-splits by entry, so the instrumentation hook (which
+ * eager-opens the pool at boot) and the route handlers (which read it per
+ * request) can each load a SEPARATE copy of the consumer's `pool.ts` module —
+ * each with its own module-level `managed`. The boot copy gets the open pool;
+ * the request copy sees `undefined` and falls through to the sync builder,
+ * which THROWS under IAM (`requires async init`). That was the prod signup 500.
+ *
+ * A registry hung off `globalThis` is a true singleton for the Node process —
+ * there is exactly one `globalThis` regardless of how many times the module is
+ * duplicated across chunks — so the pool opened at boot is the same one every
+ * request sees. This is the canonical fix for the "duplicate module singleton"
+ * hazard (the same reason Prisma/pg examples pin their client to globalThis).
+ */
+const REGISTRY = Symbol.for('@cbrl/db.managedPools')
+
+type PoolRegistry = Map<string, ManagedPool>
+
+function registry(): PoolRegistry {
+  const g = globalThis as typeof globalThis & { [REGISTRY]?: PoolRegistry }
+  return (g[REGISTRY] ??= new Map<string, ManagedPool>())
+}
+
 function iamEnabled(cfg: PoolEnvConfig): boolean {
   return process.env[cfg.iamAuthEnvVar] === 'true'
 }
@@ -162,4 +188,43 @@ export function createManagedPoolSync(cfg: PoolEnvConfig): ManagedPool {
     )
   }
   return createPasswordPool(cfg)
+}
+
+/**
+ * Async boot init that stores the pool in the process-wide registry (keyed by
+ * `cfg.database`). Idempotent: a second call for the same database is a no-op.
+ * Call this ONCE at server boot (`instrumentation.ts`) — in IAM mode it's the
+ * only path that can open the pool (the sync getter throws). Because the pool
+ * lives on `globalThis`, every duplicated copy of the consumer module then sees
+ * it via {@link getOrCreateManagedPoolSync}.
+ */
+export async function initManagedPool(cfg: PoolEnvConfig): Promise<void> {
+  const reg = registry()
+  if (reg.has(cfg.database)) return
+  reg.set(cfg.database, await createManagedPool(cfg))
+}
+
+/**
+ * Synchronous getter over the registry: returns the pool opened at boot if
+ * present, else sync-builds one (password mode) and registers it. In IAM mode
+ * with no boot init this still throws via {@link createManagedPoolSync} — but
+ * after {@link initManagedPool} ran at boot, the registry hit means the throw
+ * is never reached, regardless of module duplication across chunks.
+ */
+export function getOrCreateManagedPoolSync(cfg: PoolEnvConfig): ManagedPool {
+  const reg = registry()
+  const existing = reg.get(cfg.database)
+  if (existing) return existing
+  const built = createManagedPoolSync(cfg)
+  reg.set(cfg.database, built)
+  return built
+}
+
+/** Close and drop the registered pool for a database. No-op if absent. */
+export async function closeManagedPool(cfg: PoolEnvConfig): Promise<void> {
+  const reg = registry()
+  const existing = reg.get(cfg.database)
+  if (!existing) return
+  reg.delete(cfg.database)
+  await existing.close()
 }
