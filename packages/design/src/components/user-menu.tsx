@@ -33,6 +33,11 @@ export type UserMenuProps = {
   avatarUrl?: string | null
   /** Accessible label for the avatar trigger (localize per app). */
   triggerLabel?: string
+  /** Custom trigger. When given, it replaces the default compact avatar button
+   * (e.g. a wide sidebar-footer button showing avatar + name + email + chevron).
+   * It is wrapped in `DropdownMenuTrigger asChild`, so it must forward props and
+   * ref to a single focusable element. Defaults to the compact avatar button. */
+  trigger?: React.ReactNode
   /** Dropdown alignment relative to the trigger. */
   align?: React.ComponentProps<typeof DropdownMenuContent>['align']
   /** Account actions (`DropdownMenuItem`…) under the identity header. Sign-out
@@ -52,6 +57,7 @@ export function UserMenu({
   secondary = null,
   avatarUrl = null,
   triggerLabel = 'Account',
+  trigger,
   align = 'end',
   children,
 }: UserMenuProps) {
@@ -62,12 +68,14 @@ export function UserMenu({
     // viewport-locked, and correct UX regardless.
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon-lg" className="rounded-full" aria-label={triggerLabel}>
-          <Avatar size="default">
-            {avatarUrl ? <AvatarImage src={avatarUrl} alt={name ?? secondary ?? ''} /> : null}
-            <AvatarFallback>{userMenuInitials(name, secondary)}</AvatarFallback>
-          </Avatar>
-        </Button>
+        {trigger ?? (
+          <Button variant="ghost" size="icon-lg" className="rounded-full" aria-label={triggerLabel}>
+            <Avatar size="default">
+              {avatarUrl ? <AvatarImage src={avatarUrl} alt={name ?? secondary ?? ''} /> : null}
+              <AvatarFallback>{userMenuInitials(name, secondary)}</AvatarFallback>
+            </Avatar>
+          </Button>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align={align} className="w-56">
         {name || secondary ? (

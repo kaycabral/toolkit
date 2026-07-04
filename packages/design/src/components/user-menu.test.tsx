@@ -89,6 +89,24 @@ describe('UserMenu', () => {
     expect(screen.getByText('?')).toBeInTheDocument()
   })
 
+  it('uses a custom trigger when given, replacing the default avatar button', async () => {
+    render(
+      <UserMenu
+        name="Ada Lovelace"
+        secondary="ada@example.com"
+        trigger={<button type="button">Minha conta</button>}
+      >
+        <DropdownMenuItem>Sair</DropdownMenuItem>
+      </UserMenu>,
+    )
+    // The default "Account"/"Conta" avatar button is gone; the custom trigger
+    // drives the same dropdown.
+    expect(screen.queryByRole('button', { name: 'Account' })).not.toBeInTheDocument()
+    const trigger = screen.getByRole('button', { name: 'Minha conta' })
+    await userEvent.click(trigger)
+    expect(screen.getByRole('menuitem', { name: 'Sair' })).toBeInTheDocument()
+  })
+
   it('has no accessibility violations', async () => {
     const { container } = render(
       <UserMenu name="Ada Lovelace" secondary="ada@example.com" triggerLabel="Conta">
