@@ -123,12 +123,20 @@ export function SidebarProvider({
           } as React.CSSProperties
         }
         className={cn(
-          // Viewport-locked app shell: the wrapper is pinned to the dynamic
-          // viewport height and clips overflow, so the DOCUMENT never scrolls —
-          // the main content area is the sole scroller (see AppShell). This keeps
-          // the fixed sidebar + header rock-steady (no document-scroll for a
-          // sticky header or a Radix scroll-lock to disturb) and stops the
-          // sidebar from being "pulled" with the page on long content.
+          // CONTRACT — inner-scroll app shell. Do NOT change to `min-h-svh` /
+          // document-scroll. This wrapper is pinned to the DYNAMIC viewport
+          // (`h-dvh`) and clips overflow, so the DOCUMENT NEVER scrolls — the
+          // content region inside `SidebarInset` is the sole scroller (see
+          // AppShell). This is deliberate and load-bearing:
+          //   • A `fixed` sidebar over a DOCUMENT scroller chains fling/momentum
+          //     gestures into the page — dragging the sidebar scrolls the main.
+          //     With the document locked, there is no shared scroller to leak to.
+          //   • `dvh` (not `svh`) sizes the shell + sidebar to the dynamic
+          //     viewport, so the sidebar never renders "short" on mobile.
+          // Trade-off: since the document doesn't scroll, the mobile browser's
+          // URL bar stays visible (it only auto-hides on document scroll) — a
+          // deliberate swap of that space for a rock-steady, non-chaining shell.
+          // Enforced by `app-shell-scroll-contract.test.tsx`.
           'group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex h-dvh w-full overflow-hidden',
           className,
         )}
@@ -221,7 +229,7 @@ export function Sidebar({
         data-slot="sidebar-container"
         data-side={side}
         className={cn(
-          'fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex',
+          'fixed inset-y-0 z-10 hidden h-dvh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex',
           // Adjust the padding for floating and inset variants.
           variant === 'floating' || variant === 'inset'
             ? 'p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]'
@@ -300,9 +308,10 @@ export function SidebarInset({ className, ...props }: React.ComponentProps<'div'
     <div
       data-slot="sidebar-inset"
       className={cn(
-        // `min-h-0 overflow-hidden`: bounded to the viewport row so its flex
-        // children (static header + scrollable content) lay out correctly and the
-        // content region — not the inset — owns the scroll.
+        // CONTRACT — `min-h-0 overflow-hidden`: bounded to the viewport row so
+        // its flex children (static header + the scroll region) lay out
+        // correctly and the CONTENT REGION — not the inset, not the document —
+        // owns the scroll. See the wrapper contract in `SidebarProvider`.
         'bg-background relative flex min-h-0 w-full flex-1 flex-col overflow-hidden md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2',
         className,
       )}
@@ -361,7 +370,10 @@ export function SidebarContent({ className, ...props }: React.ComponentProps<'di
       data-slot="sidebar-content"
       data-sidebar="content"
       className={cn(
-        'no-scrollbar flex min-h-0 flex-1 flex-col gap-0 overflow-auto group-data-[collapsible=icon]:overflow-hidden',
+        // The sidebar's own scroll container (the nav list, when it overflows).
+        // `overscroll-contain` keeps a scroll that bottoms/tops out here from
+        // chaining into the content region beside it.
+        'no-scrollbar flex min-h-0 flex-1 flex-col gap-0 overflow-auto overscroll-contain group-data-[collapsible=icon]:overflow-hidden',
         className,
       )}
       {...props}

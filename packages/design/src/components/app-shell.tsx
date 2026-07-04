@@ -89,17 +89,22 @@ export function AppShell({
         </Sidebar>
 
         <SidebarInset>
-          {/* Static header: first child of the viewport-locked flex-col inset, so
-              it stays put without `sticky` (which broke under document-scroll +
-              the Radix scroll-lock when a menu opened). `shrink-0` keeps its height. */}
+          {/* Static header: first child of the viewport-locked flex-col inset,
+              so it stays put without `sticky` (the document does not scroll —
+              see the inner-scroll contract in SidebarProvider). `shrink-0`
+              keeps its height. */}
           <header className="border-border bg-card/60 z-30 flex h-14 shrink-0 items-center gap-3 border-b px-4 backdrop-blur md:px-6">
             <SidebarTrigger />
             {headerStart}
             {headerEnd ? <div className="ml-auto">{headerEnd}</div> : null}
           </header>
-          {/* The SOLE scroller. `overscroll-contain` stops a nested scroller (e.g.
-              the agenda grid) from chaining its scroll out and yanking the page. */}
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
+          {/* The SOLE content scroller (the document does not scroll — see the
+              inner-scroll contract in SidebarProvider). `overscroll-contain`
+              stops a nested scroller (e.g. the agenda grid) from chaining out
+              and yanking the shell. */}
+          <div data-slot="app-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+            {children}
+          </div>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
