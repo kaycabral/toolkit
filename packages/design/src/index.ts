@@ -98,6 +98,7 @@ export {
   FieldSet,
   FieldTitle,
 } from './components/field'
+export { HighlightedTextarea } from './components/highlighted-textarea'
 export { Input } from './components/input'
 export { InputGroup, InputGroupAddon, InputGroupInput } from './components/input-group'
 export { Label } from './components/label'
@@ -156,6 +157,7 @@ export { Collapsible, CollapsibleContent, CollapsibleTrigger } from './component
 export { Popover, PopoverContent, PopoverTrigger } from './components/popover'
 export { ScrollArea, ScrollBar } from './components/scroll-area'
 export { Separator } from './components/separator'
+export { SettingRow, SettingRowGroup } from './components/setting-row'
 export { SettingsSection } from './components/settings-section'
 export {
   Sheet,
