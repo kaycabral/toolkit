@@ -38,6 +38,22 @@ describe('Card', () => {
     expect(screen.getByText('Rodapé')).toBeInTheDocument()
   })
 
+  it('renders the title through a heading when asChild is set', () => {
+    render(
+      <Card>
+        <CardHeader>
+          <CardTitle asChild>
+            <h2>Zona de perigo</h2>
+          </CardTitle>
+        </CardHeader>
+      </Card>,
+    )
+    // The title carries the heading role (and keeps its data-slot) instead of the
+    // default non-semantic div.
+    const heading = screen.getByRole('heading', { name: 'Zona de perigo' })
+    expect(heading).toHaveAttribute('data-slot', 'card-title')
+  })
+
   it('reflects the sm size on data-size', () => {
     render(
       <Card size="sm" data-testid="card">
