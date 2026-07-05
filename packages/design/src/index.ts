@@ -154,7 +154,9 @@ export { Typography, typographyVariants } from './components/typography'
 
 export { Collapsible, CollapsibleContent, CollapsibleTrigger } from './components/collapsible'
 export { Popover, PopoverContent, PopoverTrigger } from './components/popover'
+export { ScrollArea, ScrollBar } from './components/scroll-area'
 export { Separator } from './components/separator'
+export { SettingsSection } from './components/settings-section'
 export {
   Sheet,
   SheetClose,
