@@ -29,6 +29,39 @@ const POOL_MAX = 5
 const POOL_IDLE_MS = 600_000
 
 /**
+ * Defensive timeouts — a pool with none is non-deterministic under I/O
+ * contention: a single connection that stalls (a `57P01` administrative
+ * termination leaving a half-open socket, a query blocked under load) is NEVER
+ * reclaimed, and with `max: 5` a few zombies exhaust the pool and freeze EVERY
+ * subsequent write. That is the classic "passes locally, flakes in CI": fast
+ * local I/O never stalls a connection, so the gap stays latent; the CI Postgres
+ * (ephemeral, contended) stalls one and the freeze cascades (a ~30s dead window
+ * that timed out four unrelated write-path E2E specs at once). These bound every
+ * failure mode so a stuck connection fails fast and self-heals instead of
+ * wedging the pool:
+ *
+ *  - `connectionTimeoutMillis`: `pool.connect()` rejects instead of waiting
+ *    forever for a slot — a request errors (recoverable) rather than hanging.
+ *  - `statement_timeout` / `query_timeout`: a stalled query aborts (server- and
+ *    client-side) and releases its client back to the pool.
+ *  - `idle_in_transaction_session_timeout`: a `BEGIN`-ed transaction that stalls
+ *    before COMMIT (the `readUnderRls` / write-saga shape) is killed by Postgres,
+ *    freeing the held connection — the direct fix for the observed freeze.
+ *  - `keepAlive`: TCP keepalives surface a half-open socket instead of blocking
+ *    on a connection the server already dropped.
+ *
+ * Values are generous enough never to abort legitimate work yet finite, so a
+ * wedged connection can't outlive a request. Applied to BOTH pool modes.
+ */
+const POOL_TUNING = {
+  connectionTimeoutMillis: 10_000,
+  statement_timeout: 30_000,
+  query_timeout: 30_000,
+  idle_in_transaction_session_timeout: 15_000,
+  keepAlive: true,
+} as const satisfies Partial<PoolConfig>
+
+/**
  * Attach the REQUIRED idle-client error handler to a `pg` Pool.
  *
  * `pg` emits `'error'` on the Pool when an IDLE client's connection drops on the
@@ -135,6 +168,7 @@ function createPasswordPool(cfg: PoolEnvConfig): ManagedPool {
       connectionString: requireEnv(cfg.connectionStringEnvVar),
       max: POOL_MAX,
       idleTimeoutMillis: POOL_IDLE_MS,
+      ...POOL_TUNING,
     }),
     cfg.database,
   )
@@ -162,6 +196,7 @@ export async function createManagedPool(cfg: PoolEnvConfig): Promise<ManagedPool
       database: cfg.database,
       max: POOL_MAX,
       idleTimeoutMillis: POOL_IDLE_MS,
+      ...POOL_TUNING,
     } satisfies PoolConfig),
     cfg.database,
   )

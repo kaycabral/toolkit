@@ -78,6 +78,25 @@ describe('createManagedPoolSync (password mode)', () => {
     expect(poolEnd).toHaveBeenCalledOnce()
   })
 
+  // Regression (CI flake): a pool with NO defensive timeouts never reclaims a
+  // stalled connection (a `57P01` half-open socket, a query blocked under load),
+  // and with `max: 5` a few zombies exhaust the pool and freeze every subsequent
+  // write — the "passes locally, flakes in CI" 30s dead window that timed out four
+  // unrelated write-path E2E specs at once. The factory must bound every failure
+  // mode so a wedged connection fails fast and self-heals. See POOL_TUNING.
+  it('applies defensive timeouts so a stalled connection cannot wedge the pool', () => {
+    createManagedPoolSync(CFG)
+    expect(poolCtor).toHaveBeenCalledWith(
+      expect.objectContaining({
+        connectionTimeoutMillis: 10_000,
+        statement_timeout: 30_000,
+        query_timeout: 30_000,
+        idle_in_transaction_session_timeout: 15_000,
+        keepAlive: true,
+      }),
+    )
+  })
+
   // Regression: without a Pool 'error' listener, a dropped IDLE client (Cloud SQL
   // recycling a connection, ephemeral test Postgres torn down — 57P01) escalates
   // to an uncaughtException that KILLS the process. The factory must always attach
@@ -140,7 +159,15 @@ describe('createManagedPool (async)', () => {
       }),
     )
     expect(poolCtor).toHaveBeenCalledWith(
-      expect.objectContaining({ user: 'sa@proj.iam', database: 'testdb' }),
+      expect.objectContaining({
+        user: 'sa@proj.iam',
+        database: 'testdb',
+        // The defensive timeouts must survive the merge with the connector's
+        // socket options — same flake guard as password mode, both pools.
+        connectionTimeoutMillis: 10_000,
+        idle_in_transaction_session_timeout: 15_000,
+        keepAlive: true,
+      }),
     )
     const cfgArg = poolCtor.mock.calls[0]?.[0]
     expect(cfgArg).not.toHaveProperty('connectionString')
