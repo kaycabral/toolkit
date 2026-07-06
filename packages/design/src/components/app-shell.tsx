@@ -44,8 +44,16 @@ export type AppShellProps = {
   pathname: string
   /** Renders the link element wrapping an item's icon+label (keeps routing out). */
   renderNavLink: AppShellNavLink
-  /** Sidebar footer — typically the account/user menu. */
+  /** Sidebar footer — typically the account/user menu (wide trigger: avatar +
+   * identity + chevron). Lives at the bottom of the sidebar on `md+`. */
   footer?: React.ReactNode
+  /** Compact account menu for the mobile header. Below `md` the sidebar (and its
+   * `footer`) is off-canvas, so the account/Settings/Sign-out menu is otherwise
+   * unreachable without opening the nav sheet (#1374). This slot surfaces the
+   * SAME menu in the header — but as its COMPACT trigger (a bare avatar button),
+   * not the wide sidebar footer, which would overflow a phone header. Rendered
+   * `md:hidden`; on `md+` the sidebar `footer` owns the account menu. */
+  account?: React.ReactNode
   /** Left of the top header, after the trigger (e.g. a context switcher). */
   headerStart?: React.ReactNode
   /** Right of the top header (e.g. notifications). */
@@ -63,6 +71,7 @@ export function AppShell({
   pathname,
   renderNavLink,
   footer,
+  account,
   headerStart,
   headerEnd,
   collapsible = 'icon',
@@ -96,7 +105,19 @@ export function AppShell({
           <header className="border-border bg-card/60 z-30 flex h-14 shrink-0 items-center gap-3 border-b px-4 backdrop-blur md:px-6">
             <SidebarTrigger />
             {headerStart}
-            {headerEnd ? <div className="ml-auto">{headerEnd}</div> : null}
+            {/* Everything from here is right-aligned (the spacer pushes it over)
+                regardless of whether footer/headerEnd are present. */}
+            <div className="ml-auto flex items-center gap-2">
+              {/* Below `md`, the sidebar (and its footer account menu) collapses
+                  off-canvas behind the trigger, leaving no way to reach the
+                  account/Settings/Sign-out menu without opening the nav sheet
+                  (#1374). Surface the account menu here on mobile only — as its
+                  COMPACT trigger (`account`), never the wide sidebar `footer`,
+                  which would overflow a phone header. On `md+` the sidebar footer
+                  owns it and this copy is hidden. */}
+              {account ? <div className="flex items-center md:hidden">{account}</div> : null}
+              {headerEnd}
+            </div>
           </header>
           {/* The SOLE content scroller (the document does not scroll — see the
               inner-scroll contract in SidebarProvider). `overscroll-contain`

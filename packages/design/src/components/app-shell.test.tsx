@@ -117,4 +117,60 @@ describe('AppShell', () => {
     const { container } = renderShell()
     await expectNoA11yViolations(container)
   })
+
+  // Regression #1374 — below `md` the sidebar (and its `footer` account menu) is
+  // off-canvas, so the account/Settings/Sign-out menu was unreachable without
+  // opening the nav sheet. The shell now surfaces a separate `account` slot in
+  // the header, mobile-only (`md:hidden`), so the account menu stays reachable on
+  // a phone/tablet. It is a DISTINCT node from `footer` (the header takes the
+  // compact trigger, the sidebar keeps the wide one) — not the same node reused.
+  it('renders the account slot in the header, hidden on md+ (#1374)', () => {
+    const { container } = render(
+      <AppShell
+        brand={<span>Marca</span>}
+        sections={sections}
+        pathname="/x"
+        renderNavLink={renderNavLink}
+        footer={<span>Conta ampla (sidebar)</span>}
+        account={<span data-testid="account-compact">Conta compacta</span>}
+        headerEnd={<span>sinos</span>}
+      >
+        <main>x</main>
+      </AppShell>,
+    )
+
+    // The compact account trigger is present…
+    const account = screen.getByTestId('account-compact')
+    // …inside the header (a `banner`/`<header>`), NOT the sidebar footer.
+    const header = container.querySelector('header')
+    expect(header).not.toBeNull()
+    expect(header).toContainElement(account)
+
+    // …wrapped in a mobile-only container so `md+` defers to the sidebar footer.
+    const mobileWrapper = account.parentElement
+    expect(mobileWrapper).toHaveClass('md:hidden')
+
+    // …and it is a DISTINCT node from the wide sidebar footer (no reuse).
+    expect(screen.getByText('Conta ampla (sidebar)')).toBeInTheDocument()
+    expect(header).not.toContainElement(screen.getByText('Conta ampla (sidebar)'))
+  })
+
+  it('renders no header account slot when `account` is omitted (#1374)', () => {
+    const { container } = render(
+      <AppShell
+        brand={<span>Marca</span>}
+        sections={sections}
+        pathname="/x"
+        renderNavLink={renderNavLink}
+        footer={<span>Conta do usuário</span>}
+      >
+        <main>x</main>
+      </AppShell>,
+    )
+    // The wide sidebar footer must NOT leak into the header when there is no
+    // dedicated compact `account` slot — the header simply has no account menu.
+    const header = container.querySelector('header')
+    expect(header).not.toBeNull()
+    expect(header?.querySelector('.md\\:hidden')).toBeNull()
+  })
 })
