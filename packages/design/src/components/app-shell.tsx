@@ -98,27 +98,7 @@ export function AppShell({
         </Sidebar>
 
         <SidebarInset>
-          {/* Static header: first child of the viewport-locked flex-col inset,
-              so it stays put without `sticky` (the document does not scroll —
-              see the inner-scroll contract in SidebarProvider). `shrink-0`
-              keeps its height. */}
-          <header className="border-border bg-card/60 z-30 flex h-14 shrink-0 items-center gap-3 border-b px-4 backdrop-blur md:px-6">
-            <SidebarTrigger />
-            {headerStart}
-            {/* Everything from here is right-aligned (the spacer pushes it over)
-                regardless of whether footer/headerEnd are present. */}
-            <div className="ml-auto flex items-center gap-2">
-              {/* Below `md`, the sidebar (and its footer account menu) collapses
-                  off-canvas behind the trigger, leaving no way to reach the
-                  account/Settings/Sign-out menu without opening the nav sheet
-                  (#1374). Surface the account menu here on mobile only — as its
-                  COMPACT trigger (`account`), never the wide sidebar `footer`,
-                  which would overflow a phone header. On `md+` the sidebar footer
-                  owns it and this copy is hidden. */}
-              {account ? <div className="flex items-center md:hidden">{account}</div> : null}
-              {headerEnd}
-            </div>
-          </header>
+          <ShellHeader account={account} headerStart={headerStart} headerEnd={headerEnd} />
           {/* The SOLE content scroller (the document does not scroll — see the
               inner-scroll contract in SidebarProvider). `overscroll-contain`
               stops a nested scroller (e.g. the agenda grid) from chaining out
@@ -129,6 +109,48 @@ export function AppShell({
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
+  )
+}
+
+// The static top header. Extracted so it can read `useSidebar().isMobile` — the
+// SAME gate the sidebar uses to fold into an off-canvas Sheet. The mobile account
+// menu MUST flip on that identical signal, never on a separate CSS `md:` query:
+// on a real phone `window.innerWidth` (what `useIsMobile` reads) and the CSS
+// `@media (min-width:768px)` disagree by a pixel at the boundary, so a CSS-gated
+// account menu could hide (`md:` = desktop) at the exact width where the sidebar
+// already folded away (`isMobile` = mobile) — leaving BOTH account menus gone and
+// a blank footer. One source of truth closes that gap: the header account menu
+// shows iff `isMobile`, in perfect lockstep with the sidebar.
+function ShellHeader({
+  account,
+  headerStart,
+  headerEnd,
+}: {
+  account?: React.ReactNode
+  headerStart?: React.ReactNode
+  headerEnd?: React.ReactNode
+}) {
+  const { isMobile } = useSidebar()
+  return (
+    // Static header: first child of the viewport-locked flex-col inset, so it
+    // stays put without `sticky` (the document does not scroll — see the
+    // inner-scroll contract in SidebarProvider). `shrink-0` keeps its height.
+    <header className="border-border bg-card/60 z-30 flex h-14 shrink-0 items-center gap-3 border-b px-4 backdrop-blur md:px-6">
+      <SidebarTrigger />
+      {headerStart}
+      {/* Everything from here is right-aligned (the spacer pushes it over)
+          regardless of whether footer/headerEnd are present. */}
+      <div className="ml-auto flex items-center gap-2">
+        {/* When the sidebar is folded off-canvas (mobile), its footer account
+            menu is unreachable, so surface the account menu here — as its COMPACT
+            trigger (`account`), never the wide sidebar `footer` which would
+            overflow a phone header. Gated on the SAME `isMobile` as the sidebar
+            (not a CSS `md:` query) so the two never disagree at the breakpoint and
+            leave no account menu at all (#1374, blank-footer follow-up). */}
+        {account && isMobile ? <div className="flex items-center">{account}</div> : null}
+        {headerEnd}
+      </div>
+    </header>
   )
 }
 

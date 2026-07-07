@@ -1,5 +1,5 @@
 import { expectNoA11yViolations } from '@cbrl/testing/a11y'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { CalendarDays, CreditCard } from 'lucide-react'
 import { describe, expect, it } from 'vitest'
@@ -118,59 +118,88 @@ describe('AppShell', () => {
     await expectNoA11yViolations(container)
   })
 
-  // Regression #1374 — below `md` the sidebar (and its `footer` account menu) is
-  // off-canvas, so the account/Settings/Sign-out menu was unreachable without
-  // opening the nav sheet. The shell now surfaces a separate `account` slot in
-  // the header, mobile-only (`md:hidden`), so the account menu stays reachable on
-  // a phone/tablet. It is a DISTINCT node from `footer` (the header takes the
-  // compact trigger, the sidebar keeps the wide one) — not the same node reused.
-  it('renders the account slot in the header, hidden on md+ (#1374)', () => {
-    const { container } = render(
+  // Regression #1374 + blank-footer follow-up — below the mobile breakpoint the
+  // sidebar (and its `footer` account menu) folds off-canvas, so the shell
+  // surfaces a separate compact `account` menu in the header. CRITICAL: that
+  // header menu is gated on the SAME `useIsMobile()` signal the sidebar uses to
+  // fold — NOT a CSS `md:` query. On a real phone `window.innerWidth` and the CSS
+  // `@media (min-width:768px)` disagree by a pixel at the boundary; a CSS-gated
+  // header menu could hide (CSS=desktop) at the exact width the sidebar already
+  // folded (JS=mobile), leaving NO account menu and a blank footer. One source of
+  // truth: the header account menu renders iff `isMobile`, in lockstep with the
+  // sidebar. Below asserts both regimes by driving `window.innerWidth` — the JS
+  // width `useIsMobile()` reads (`window.innerWidth < 768`).
+  const setViewportWidth = (width: number) => {
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      writable: true,
+      value: width,
+    })
+  }
+
+  it('mostra o menu de conta compacto no header quando mobile (#1374)', () => {
+    // < 768 → useIsMobile() === true.
+    setViewportWidth(400)
+    render(
       <AppShell
         brand={<span>Marca</span>}
         sections={sections}
         pathname="/x"
         renderNavLink={renderNavLink}
         footer={<span>Conta ampla (sidebar)</span>}
-        account={<span data-testid="account-compact">Conta compacta</span>}
+        account={<button type="button">Conta compacta</button>}
         headerEnd={<span>sinos</span>}
       >
         <main>x</main>
       </AppShell>,
     )
 
-    // The compact account trigger is present…
-    const account = screen.getByTestId('account-compact')
-    // …inside the header (a `banner`/`<header>`), NOT the sidebar footer.
-    const header = container.querySelector('header')
-    expect(header).not.toBeNull()
-    expect(header).toContainElement(account)
-
-    // …wrapped in a mobile-only container so `md+` defers to the sidebar footer.
-    const mobileWrapper = account.parentElement
-    expect(mobileWrapper).toHaveClass('md:hidden')
-
-    // …and it is a DISTINCT node from the wide sidebar footer (no reuse).
-    expect(screen.getByText('Conta ampla (sidebar)')).toBeInTheDocument()
-    expect(header).not.toContainElement(screen.getByText('Conta ampla (sidebar)'))
+    // The compact account trigger is present inside the header (role `banner`), so
+    // the account menu stays reachable while the sidebar footer is off-canvas.
+    const header = within(screen.getByRole('banner'))
+    expect(header.getByRole('button', { name: 'Conta compacta' })).toBeInTheDocument()
   })
 
-  it('renders no header account slot when `account` is omitted (#1374)', () => {
-    const { container } = render(
+  it('não duplica o menu de conta no header quando desktop — a sidebar o detém (#1374)', () => {
+    // >= 768 → useIsMobile() === false.
+    setViewportWidth(1200)
+    render(
       <AppShell
         brand={<span>Marca</span>}
         sections={sections}
         pathname="/x"
         renderNavLink={renderNavLink}
-        footer={<span>Conta do usuário</span>}
+        footer={<span>Conta ampla (sidebar)</span>}
+        account={<button type="button">Conta compacta</button>}
+        headerEnd={<span>sinos</span>}
       >
         <main>x</main>
       </AppShell>,
     )
-    // The wide sidebar footer must NOT leak into the header when there is no
-    // dedicated compact `account` slot — the header simply has no account menu.
-    const header = container.querySelector('header')
-    expect(header).not.toBeNull()
-    expect(header?.querySelector('.md\\:hidden')).toBeNull()
+
+    // On desktop the sidebar footer owns the account menu, so the header does NOT
+    // render a second (compact) copy.
+    expect(screen.queryByRole('button', { name: 'Conta compacta' })).not.toBeInTheDocument()
+  })
+
+  it('renders no header account slot when `account` is omitted (#1374)', () => {
+    // Even on mobile (where the header WOULD surface a compact account menu), with
+    // no `account` slot the header carries no account menu and the wide sidebar
+    // footer never leaks into it.
+    setViewportWidth(400)
+    render(
+      <AppShell
+        brand={<span>Marca</span>}
+        sections={sections}
+        pathname="/x"
+        renderNavLink={renderNavLink}
+        footer={<button type="button">Conta ampla (sidebar)</button>}
+        headerEnd={<span>sinos</span>}
+      >
+        <main>x</main>
+      </AppShell>,
+    )
+    const header = within(screen.getByRole('banner'))
+    expect(header.queryByRole('button', { name: 'Conta ampla (sidebar)' })).not.toBeInTheDocument()
   })
 })
