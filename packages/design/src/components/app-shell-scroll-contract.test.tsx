@@ -32,10 +32,18 @@ describe('AppShell inner-scroll contract', () => {
     expect(sidebarCore).not.toMatch(/group\/sidebar-wrapper[^'`]*min-h-svh/)
   })
 
-  it('sizes the fixed sidebar rail with the dynamic viewport, not svh', () => {
+  it('anchors the fixed sidebar rail to the visible viewport via inset, not a dvh height', () => {
+    // #1379: on the installed PWA (WebView Android), `100dvh` resolves LARGER than
+    // the actually-visible height when the system-bar geometry shifts — the rail
+    // grows past the fold and the footer UserMenu is clipped by `overflow-hidden`.
+    // The rail's height must come from `inset-y-0` (top:0;bottom:0 → the visible
+    // viewport by definition), NEVER from a `h-dvh`/`h-svh` viewport-unit height
+    // that can diverge from the fold. `svh` renders short; `dvh` renders tall in
+    // the WebView; only `inset-y-0` tracks what the user can actually see.
     const rail = sidebarCore.match(/fixed inset-y-0[^'`]*/)?.[0] ?? ''
-    expect(rail).toContain('h-dvh')
+    expect(rail).not.toContain('h-dvh')
     expect(rail).not.toContain('h-svh')
+    expect(rail).not.toContain('h-lvh')
   })
 
   it('exposes a single content scroll container that contains its own overscroll', () => {
