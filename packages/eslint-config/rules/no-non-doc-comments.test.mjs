@@ -38,6 +38,18 @@ test('no-non-doc-comments', () => {
         filename: join(fixtures, 'prettier-ignore.ts'),
         code: '// prettier-ignore\nexport const grid = [1, 2, 3]\n',
       },
+      {
+        filename: join(fixtures, 'pure-annotation.ts'),
+        code: 'export const x = /*#__PURE__*/ makeThing()\n',
+      },
+      {
+        filename: join(fixtures, 'webpack-magic.ts'),
+        code: 'export const load = () => import(/* webpackChunkName: "x" */ "./x")\n',
+      },
+      {
+        filename: join(fixtures, 'fold-region.ts'),
+        code: '// #region setup\nexport const a = 1\n// #endregion\n',
+      },
     ],
     invalid: [
       {
@@ -87,6 +99,33 @@ test('no-non-doc-comments — JSX expression comment removes the whole container
         filename: join(fixtures, 'jsx-comment.tsx'),
         code: 'export const El = () => (\n  <div>\n    {/* a jsx comment */}\n    <span />\n  </div>\n)\n',
         output: 'export const El = () => (\n  <div>\n    <span />\n  </div>\n)\n',
+        errors: [{ messageId: 'prose' }],
+      },
+    ],
+  })
+})
+
+const untypedRuleTester = new RuleTester({
+  languageOptions: {
+    parser: tseslint.parser,
+    parserOptions: { ecmaVersion: 2022, sourceType: 'module' },
+  },
+})
+
+test('no-non-doc-comments — without a TS program, block /** */ is preserved (fail-safe)', () => {
+  untypedRuleTester.run('no-non-doc-comments', noNonDocComments, {
+    valid: [
+      {
+        code: '/**\n * Any block doc.\n * @returns n\n */\nexport function f() {\n  return 1\n}\n',
+      },
+      {
+        code: '/** even an untagged block doc is kept when we cannot consult the compiler */\nexport const x = 1\n',
+      },
+    ],
+    invalid: [
+      {
+        code: 'export const y = 1 // a line comment is still removed without a program\n',
+        output: 'export const y = 1\n',
         errors: [{ messageId: 'prose' }],
       },
     ],

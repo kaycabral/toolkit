@@ -9,6 +9,11 @@ const MACHINE_PRAGMAS = [
   /^\s*(c8|v8|istanbul|node:coverage)\b/,
   /^\s*@(jest|vitest)-environment\b/,
   /^\s*#!/,
+  /^\s*#?__(PURE|NO_SIDE_EFFECTS)__\s*$/,
+  /^\s*@(license|preserve|__PURE__|__NO_SIDE_EFFECTS__|vite-ignore)\b/,
+  /webpackChunkName|webpackPrefetch|webpackPreload|webpackMode|webpackIgnore/,
+  /^#\s*sourceMappingURL=/,
+  /^\s*#?(end)?region\b/,
 ]
 
 const ESLINT_DIRECTIVE = /^\s*eslint(-disable(-line|-next-line)?|-enable)?\b/
@@ -66,8 +71,8 @@ export const noNonDocComments = {
     const services = sourceCode.parserServices
     const program = services?.program
     const tsSource = program?.getSourceFile(context.filename)
-    const taggedJsDoc =
-      tsSource === undefined || tsSource === null ? new Set() : collectTaggedJsDocRanges(tsSource)
+    const hasProgram = tsSource !== undefined && tsSource !== null
+    const taggedJsDoc = hasProgram ? collectTaggedJsDocRanges(tsSource) : new Set()
 
     return {
       Program() {
@@ -78,6 +83,7 @@ export const noNonDocComments = {
           if (isMachinePragma(text)) continue
 
           if (comment.type === 'Block' && text.startsWith('*')) {
+            if (!hasProgram) continue
             const key = `${comment.range[0]}:${comment.range[1]}`
             if (taggedJsDoc.has(key)) continue
           }
