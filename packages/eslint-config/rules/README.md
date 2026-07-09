@@ -2,11 +2,12 @@
 
 Cada regra codifica um invariante do monorepo que built-ins não cobrem. O rationale completo (anti-pattern, por quê, padrão correto) vive no header de cada `.mjs` — fonte única, não duplicar aqui.
 
-| Regra                         | Codifica                                              | Built-in que complementa                                                 |
-| ----------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------ |
-| `no-eslint-disable`           | Invariante #7 (nunca desabilitar) — reporta **error** | `noInlineConfig` (nativo, só warning) → usado como backstop unbypassable |
-| `no-conditional-spread-chain` | Decisão PR #971/#972 (spread cond aninhado)           | `no-nested-ternary` (forma ternária direta)                              |
-| `no-env-value-fallback`       | fail-fast > silent default em `process.env`           | —                                                                        |
+| Regra                         | Codifica                                                                                                                                                                                                         | Built-in que complementa                                                 |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `no-eslint-disable`           | Invariante #7 (nunca desabilitar) — reporta **error**                                                                                                                                                            | `noInlineConfig` (nativo, só warning) → usado como backstop unbypassable |
+| `no-conditional-spread-chain` | Decisão PR #971/#972 (spread cond aninhado)                                                                                                                                                                      | `no-nested-ternary` (forma ternária direta)                              |
+| `no-env-value-fallback`       | fail-fast > silent default em `process.env`                                                                                                                                                                      | —                                                                        |
+| `no-non-doc-comments`         | ADR 0018 (zero comentário no oilio) — só pragma de máquina + TSDoc anexado com `@tag` sobrevivem; determinismo via `parserServices.program`. `error` só no oilio. Autofix remove (inclui container `{}` de JSX). | `no-inline-comments`, `line-comment-position` (nativos, complementam)    |
 
 > `no-eslint-disable` é error + `linterOptions.noInlineConfig: true` (em `../configs/javascript.mjs`) como backstop: o nativo sozinho só emite warning (não barra `eslint .` sem `--max-warnings 0`); a custom rule dá o hard-fail e o `noInlineConfig` impede que ela seja silenciada inline.
 
