@@ -48,3 +48,17 @@ export function requireEnvNumber(name: string): number {
   }
   return n
 }
+
+/**
+ * Read an OPTIONAL boolean feature flag. Unlike the required helpers, an absent
+ * or empty value is not a misconfiguration — it means "off". A flag is on only
+ * when explicitly set to `'true'` or `'1'` (case/space-insensitive); every other
+ * value, including a typo, is off. Fail-safe: the default hides, never exposes —
+ * so a dark-launched surface stays hidden unless something deliberately turns it
+ * on. This is the sanctioned reader for env-driven flags; the
+ * `no-env-value-fallback` rule bans the `process.env.X === 'true'` inline form.
+ */
+export function readEnvFlag(name: string): boolean {
+  const value = process.env[name]?.trim().toLowerCase()
+  return value === 'true' || value === '1'
+}

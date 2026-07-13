@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { requireEnv, requireEnvNumber, requireEnvOneOf } from './index'
+import { readEnvFlag, requireEnv, requireEnvNumber, requireEnvOneOf } from './index'
 
 const KEY = 'CBRL_ENV_TEST_VAR'
 const KEY_A = 'CBRL_ENV_TEST_A'
@@ -65,5 +65,35 @@ describe('requireEnvNumber', () => {
     expect(() => requireEnvNumber(KEY)).toThrow(/expected a positive number/)
     process.env[KEY] = '-3'
     expect(() => requireEnvNumber(KEY)).toThrow(/expected a positive number/)
+  })
+})
+
+describe('readEnvFlag', () => {
+  it('is off when unset (fail-safe default hides)', () => {
+    expect(readEnvFlag(KEY)).toBe(false)
+  })
+
+  it('is off when empty', () => {
+    process.env[KEY] = ''
+    expect(readEnvFlag(KEY)).toBe(false)
+  })
+
+  it('is on for "true" and "1"', () => {
+    process.env[KEY] = 'true'
+    expect(readEnvFlag(KEY)).toBe(true)
+    process.env[KEY] = '1'
+    expect(readEnvFlag(KEY)).toBe(true)
+  })
+
+  it('is case- and whitespace-insensitive', () => {
+    process.env[KEY] = '  TRUE '
+    expect(readEnvFlag(KEY)).toBe(true)
+  })
+
+  it('is off for any other value, including typos', () => {
+    for (const raw of ['false', '0', 'yes', 'on', 'ON', 'truthy']) {
+      process.env[KEY] = raw
+      expect(readEnvFlag(KEY)).toBe(false)
+    }
   })
 })
