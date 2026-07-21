@@ -27,6 +27,7 @@ export {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from './components/alert-dialog'
+export { AuthSplitScreen, type AuthSplitScreenProps } from './components/auth-split-screen'
 export {
   Avatar,
   AvatarBadge,

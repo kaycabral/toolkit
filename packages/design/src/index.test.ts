@@ -24,6 +24,7 @@ describe('public API surface', () => {
         "AlertDialogTitle",
         "AlertDialogTrigger",
         "AppShell",
+        "AuthSplitScreen",
         "Avatar",
         "AvatarBadge",
         "AvatarFallback",
