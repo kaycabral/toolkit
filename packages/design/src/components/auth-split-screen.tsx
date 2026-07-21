@@ -48,7 +48,7 @@ function AuthSplitScreen({ visual, children, className, ...props }: AuthSplitScr
           data-slot="auth-split-screen-visual"
           data-visible-from="md"
           aria-hidden="true"
-          className="bg-muted hidden min-h-dvh w-1/2 overflow-hidden md:flex md:items-center md:justify-center"
+          className="bg-muted relative hidden min-h-dvh w-1/2 overflow-hidden md:flex md:items-center md:justify-center"
         >
           {visual}
         </div>
