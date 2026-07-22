@@ -125,6 +125,7 @@ export {
 } from './components/list'
 export { Main, mainVariants } from './components/main'
 export { Pagination, type PaginationProps } from './components/pagination'
+export { RadioGroup, RadioGroupItem } from './components/radio-group'
 export {
   Select,
   SelectContent,
@@ -139,6 +140,7 @@ export {
 } from './components/select'
 export { Skeleton } from './components/skeleton'
 export { Toaster } from './components/sonner'
+export { Stepper } from './components/stepper'
 export { Switch } from './components/switch'
 export {
   Table,
