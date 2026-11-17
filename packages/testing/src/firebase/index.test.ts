@@ -38,7 +38,7 @@ describe('firebaseEmulatorWebServer', () => {
     const ws = firebaseEmulatorWebServer({
       command: 'pnpm run dev',
       port: 3003,
-      projectId: 'tekoa-local',
+      projectId: 'imovil-local',
     })
     expect(ws.url).toBe('http://127.0.0.1:3003')
     expect(ws.command).toBe('pnpm run dev')

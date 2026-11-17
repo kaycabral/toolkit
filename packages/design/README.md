@@ -5,7 +5,7 @@ Design system unificado do monorepo. Tokens canônicos + componentes shadcn/Radi
 ## Quem usa
 
 - `templates/web/` — todo app novo herda este design system (via `pnpm run new:app`).
-- `apps/tekoa/` — pilot real.
+- `apps/imovil/` — pilot real.
 - `apps/saas-manager/` — adotante.
 - `apps/oilio/` — adotante (Sidebar nav + tokens via `@cbrl/design/globals.css`).
 
@@ -26,7 +26,7 @@ Cada app adotante pode redefinir `--accent` / `--accent-foreground` no próprio 
 
 ```css
 :root {
-  --accent: oklch(0.48 0.092 208); /* teal/petróleo (tekoa) */
+  --accent: oklch(0.48 0.092 208); /* teal/petróleo (imovil) */
   --accent-foreground: oklch(0.99 0.003 210);
 }
 ```
@@ -47,7 +47,7 @@ Apps autenticados montam o shell via o componente **`AppShell`** (do `@cbrl/desi
 
 /* Override apenas o que for específico do produto: */
 :root {
-  --accent: oklch(0.48 0.092 208); /* teal/petróleo (tekoa) */
+  --accent: oklch(0.48 0.092 208); /* teal/petróleo (imovil) */
   --accent-foreground: oklch(0.99 0.003 210);
 }
 ```
@@ -174,7 +174,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
 - **Routing fora do design**: o link de cada item vem do `renderNavLink` do consumidor (o design não importa `next`). O landmark `<nav aria-label>`, o highlight ativo e o `setOpenMobile(false)` no clique já são do `AppShell` — não reimplemente.
 - **Escape hatch**: para um shell fora do padrão, os primitivos (`Sidebar`, `SidebarProvider`, `SidebarMenu*`, `useSidebar`, …) continuam exportados; mas a casca canônica é o `AppShell`.
 
-Adotantes hoje: `apps/oilio` — shell do app de tenant (`(app)/`) e shell do cliente (`/me`), ambos sobre o mesmo `AppShell`. Migrar `apps/tekoa`/`apps/saas-manager` quando agendar.
+Adotantes hoje: `apps/oilio` — shell do app de tenant (`(app)/`) e shell do cliente (`/me`), ambos sobre o mesmo `AppShell`. Migrar `apps/imovil`/`apps/saas-manager` quando agendar.
 
 ### Largura de conteúdo — `Main`
 

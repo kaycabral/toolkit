@@ -8,7 +8,7 @@
  * `process.env.X ?? 'literal'` anti-pattern in favour of them.
  *
  * Replaces the per-product copies that previously lived in
- * `@<product>/lib` (gabar, scheduling, tekoa, focusely, cbrl.dev, sports).
+ * `@<product>/lib` (gabar, scheduling, imovil, focusely, cbrl.dev, sports).
  */
 
 /** Read a required env var. Throws if it is unset or empty. */
