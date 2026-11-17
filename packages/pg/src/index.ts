@@ -122,6 +122,14 @@ export type PoolEnvConfig = {
   readonly iamUserEnvVar: string
   /** Logical database name to connect to in IAM mode, e.g. `oilio`. */
   readonly database: string
+  /**
+   * Optional TLS policy for password mode, resolved from the connection string
+   * (e.g. pin a provider's private root CA so `verify-full` works against a
+   * managed Postgres such as Supabase). Return `undefined` to leave TLS to the
+   * connection string. The URL must not carry `sslmode` when this returns a
+   * value — `pg` lets connection-string params override the `ssl` object.
+   */
+  readonly passwordModeSsl?: (connectionString: string) => PoolConfig['ssl'] | undefined
 }
 
 /** A pool plus the connector that backs it (IAM mode); both must be closed. */
@@ -163,9 +171,12 @@ function iamEnabled(cfg: PoolEnvConfig): boolean {
 
 /** Build the password-mode pool (plain connection string). Always synchronous. */
 function createPasswordPool(cfg: PoolEnvConfig): ManagedPool {
+  const connectionString = requireEnv(cfg.connectionStringEnvVar)
+  const ssl = cfg.passwordModeSsl?.(connectionString)
   const pool = attachPoolErrorHandler(
     new Pool({
-      connectionString: requireEnv(cfg.connectionStringEnvVar),
+      connectionString,
+      ...(ssl === undefined ? {} : { ssl }),
       max: POOL_MAX,
       idleTimeoutMillis: POOL_IDLE_MS,
       ...POOL_TUNING,
