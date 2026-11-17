@@ -72,6 +72,18 @@ describe('createManagedPoolSync (password mode)', () => {
     expect(getOptions).not.toHaveBeenCalled()
   })
 
+  it('passes no ssl option unless passwordModeSsl resolves one', () => {
+    createManagedPoolSync({ ...CFG, passwordModeSsl: () => undefined })
+    expect(poolCtor.mock.calls[0]?.[0]).not.toHaveProperty('ssl')
+  })
+
+  it('applies the ssl policy resolved from the connection string', () => {
+    const resolver = vi.fn((url: string) => (url.includes('localhost') ? { ca: 'PEM' } : undefined))
+    createManagedPoolSync({ ...CFG, passwordModeSsl: resolver })
+    expect(resolver).toHaveBeenCalledWith('postgres://u:p@localhost:5432/testdb')
+    expect(poolCtor).toHaveBeenCalledWith(expect.objectContaining({ ssl: { ca: 'PEM' } }))
+  })
+
   it('close() ends the pool', async () => {
     const { close } = createManagedPoolSync(CFG)
     await close()
