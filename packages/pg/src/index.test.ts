@@ -84,6 +84,27 @@ describe('createManagedPoolSync (password mode)', () => {
     expect(poolCtor).toHaveBeenCalledWith(expect.objectContaining({ ssl: { ca: 'PEM' } }))
   })
 
+  it('strips URL ssl params when the resolver owns TLS, so they cannot override it', () => {
+    process.env.TEST_DATABASE_URL = 'postgres://u:p@localhost:5432/testdb?sslmode=require&x=1'
+    createManagedPoolSync({ ...CFG, passwordModeSsl: () => ({ ca: 'PEM' }) })
+    expect(poolCtor).toHaveBeenCalledWith(
+      expect.objectContaining({
+        connectionString: 'postgres://u:p@localhost:5432/testdb?x=1',
+        ssl: { ca: 'PEM' },
+      }),
+    )
+  })
+
+  it('keeps URL ssl params when no resolver applies', () => {
+    process.env.TEST_DATABASE_URL = 'postgres://u:p@localhost:5432/testdb?sslmode=disable'
+    createManagedPoolSync(CFG)
+    expect(poolCtor).toHaveBeenCalledWith(
+      expect.objectContaining({
+        connectionString: 'postgres://u:p@localhost:5432/testdb?sslmode=disable',
+      }),
+    )
+  })
+
   it('close() ends the pool', async () => {
     const { close } = createManagedPoolSync(CFG)
     await close()

@@ -1,6 +1,9 @@
 import { requireEnv } from '@cbrl/env'
 import { AuthTypes, Connector, IpAddressTypes } from '@google-cloud/cloud-sql-connector'
 import { Pool, type PoolConfig } from 'pg'
+import { stripSslParams } from './supabase'
+
+export { stripSslParams, SUPABASE_ROOT_CA_2021, supabaseSsl } from './supabase'
 
 /**
  * Shared Postgres pool factory for the monorepo's Cloud SQL databases (oilio
@@ -126,8 +129,8 @@ export type PoolEnvConfig = {
    * Optional TLS policy for password mode, resolved from the connection string
    * (e.g. pin a provider's private root CA so `verify-full` works against a
    * managed Postgres such as Supabase). Return `undefined` to leave TLS to the
-   * connection string. The URL must not carry `sslmode` when this returns a
-   * value — `pg` lets connection-string params override the `ssl` object.
+   * connection string. When this returns a value, the pool strips the URL's
+   * `ssl*` params first (`pg` lets them override the `ssl` object).
    */
   readonly passwordModeSsl?: (connectionString: string) => PoolConfig['ssl'] | undefined
 }
@@ -171,8 +174,11 @@ function iamEnabled(cfg: PoolEnvConfig): boolean {
 
 /** Build the password-mode pool (plain connection string). Always synchronous. */
 function createPasswordPool(cfg: PoolEnvConfig): ManagedPool {
-  const connectionString = requireEnv(cfg.connectionStringEnvVar)
-  const ssl = cfg.passwordModeSsl?.(connectionString)
+  const rawConnectionString = requireEnv(cfg.connectionStringEnvVar)
+  const ssl = cfg.passwordModeSsl?.(rawConnectionString)
+  // The resolver owns TLS when it returns a value: URL ssl params would override it.
+  const connectionString =
+    ssl === undefined ? rawConnectionString : stripSslParams(rawConnectionString)
   const pool = attachPoolErrorHandler(
     new Pool({
       connectionString,
