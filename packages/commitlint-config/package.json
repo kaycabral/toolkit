@@ -31,7 +31,7 @@
     "@commitlint/cli": ">=19"
   },
   "devDependencies": {
-    "@commitlint/lint": "^19.8.1",
+    "@commitlint/lint": "^21.2.4",
     "publint": "catalog:"
   },
   "publishConfig": {
