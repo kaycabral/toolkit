@@ -1,0 +1,23 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Shared Renovate preset. Consume with: { \"extends\": [\"github>kaycabral/toolkit\"] }",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests", ":semanticCommits"],
+  "timezone": "America/Sao_Paulo",
+  "schedule": ["before 6am on monday"],
+  "rangeStrategy": "bump",
+  "lockFileMaintenance": { "enabled": true },
+  "packageRules": [
+    {
+      "description": "Toolkit packages move together in one PR.",
+      "matchPackageNames": ["@cbrl/**"],
+      "groupName": "cbrl toolkit",
+      "schedule": ["at any time"]
+    },
+    {
+      "description": "The toolkit's reusable workflow is pinned by SHA; refresh it with the packages.",
+      "matchDepNames": ["kaycabral/toolkit"],
+      "groupName": "cbrl toolkit",
+      "schedule": ["at any time"]
+    }
+  ]
+}
