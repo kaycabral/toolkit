@@ -1,0 +1,8 @@
+# Source nvm if present so pnpm is available even when git is invoked from
+# environments that don't load shell rc files (some IDEs, GUI tools).
+[ -s "$HOME/.nvm/nvm.sh" ] && . "$HOME/.nvm/nvm.sh"
+
+# `npx` (not `pnpm exec`) so the hook resolves the binary by walking up the
+# node_modules tree — works from a linked worktree under .claude/worktrees/,
+# where `pnpm exec` can't locate the workspace root. Mirrors pre-commit's npx.
+npx --no-install commitlint --edit "$1"

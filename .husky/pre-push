@@ -1,0 +1,18 @@
+# Source nvm if present so pnpm is available even when git is invoked from
+# environments that don't load shell rc files (some IDEs, GUI tools).
+[ -s "$HOME/.nvm/nvm.sh" ] && . "$HOME/.nvm/nvm.sh"
+
+# Conventional Branches — valida prefixo da branch (não aplica em main).
+branch=$(git rev-parse --abbrev-ref HEAD)
+if [ "$branch" != "main" ]; then
+  echo "$branch" | grep -qE '^(feat|fix|chore|docs|refactor|test|perf|build|ci|style|revert)/' || {
+    echo "❌ Branch deve começar com prefixo Conventional: feat/, fix/, chore/, docs/, refactor/, test/, perf/, build/, ci/, style/, revert/"
+    echo "   Atual: $branch"
+    echo "   Exemplo: git branch -m feat/${branch}"
+    exit 1
+  }
+fi
+
+# Heavy gates (typecheck, tests, build) run in CI (.github/workflows/ci.yml).
+# Keep pre-push to the instant branch-name check; format runs on staged files
+# in pre-commit.
