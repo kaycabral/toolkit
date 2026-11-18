@@ -1,14 +1,11 @@
 /**
- * Canonical environment-variable helpers for the cbrl monorepo.
+ * Canonical environment-variable helpers.
  *
  * Principle: fail-fast over silent default. A missing or empty *required* env
  * var should crash loudly at startup instead of running with a trivial value
  * that masks misconfiguration. These helpers are the sanctioned way to read
  * required config — the `cbrl/no-env-value-fallback` ESLint rule bans the
  * `process.env.X ?? 'literal'` anti-pattern in favour of them.
- *
- * Replaces the per-product copies that previously lived in
- * `@<product>/lib` (gabar, scheduling, imovil, focusely, cbrl.dev, sports).
  */
 
 /** Read a required env var. Throws if it is unset or empty. */

@@ -1,22 +1,54 @@
 {
   "name": "@cbrl/env",
-  "version": "0.0.0",
-  "private": true,
-  "license": "UNLICENSED",
-  "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
-  "exports": {
-    ".": "./src/index.ts"
+  "version": "0.1.0",
+  "description": "Fail-fast environment variable readers: requireEnv, requireEnvOneOf, requireEnvNumber, readEnvFlag.",
+  "license": "MIT",
+  "author": "Kayron Cabral",
+  "homepage": "https://github.com/kaycabral/toolkit/tree/main/packages/env#readme",
+  "bugs": {
+    "url": "https://github.com/kaycabral/toolkit/issues"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaycabral/toolkit.git",
+    "directory": "packages/env"
+  },
+  "keywords": [
+    "env",
+    "environment",
+    "config",
+    "fail-fast"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "tsdown",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --coverage"
+    "test": "vitest run --coverage",
+    "check:package": "node ../../scripts/check-package.mjs --types",
+    "lint": "eslint ."
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "catalog:",
+    "@cbrl/eslint-config": "workspace:*",
     "@cbrl/testing": "workspace:*",
-    "@cbrl/tsconfig-base": "workspace:*",
+    "@cbrl/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "publint": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
