@@ -1,0 +1,45 @@
+{
+  "name": "@cbrl/prettier-config",
+  "version": "0.1.0",
+  "description": "Shared Prettier config: no semicolons, single quotes, organized imports. Tailwind class sorting via the /tailwind entry.",
+  "license": "MIT",
+  "author": "Kayron Cabral",
+  "homepage": "https://github.com/kaycabral/toolkit/tree/main/packages/prettier-config#readme",
+  "bugs": {
+    "url": "https://github.com/kaycabral/toolkit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaycabral/toolkit.git",
+    "directory": "packages/prettier-config"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./index.mjs",
+    "./tailwind": "./tailwind.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "tailwind.mjs"
+  ],
+  "scripts": {
+    "check:package": "node ../../scripts/check-package.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "prettier-plugin-tailwindcss": "^0.8.0"
+  },
+  "peerDependencies": {
+    "prettier": "^3.0.0",
+    "typescript": ">=5.0.0 <7"
+  },
+  "devDependencies": {
+    "prettier": "catalog:",
+    "publint": "catalog:",
+    "typescript": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
