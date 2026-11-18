@@ -1,12 +1,12 @@
 {
-  "extends": "@cbrl/tsconfig-base/base.json",
-  "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "jsx": "react-jsx",
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "extends": "@cbrl/tsconfig/react-library.json",
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "vitest.setup.ts",
+    "vitest.config.ts",
+    "tsdown.config.ts",
+    "scripts/*.mjs"
+  ],
   "exclude": ["node_modules"]
 }

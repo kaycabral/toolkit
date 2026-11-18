@@ -4,6 +4,7 @@ import * as React from 'react'
 
 import { useIsMobile } from '../hooks/use-mobile'
 import { cn } from '../lib/cn'
+import { cssVars } from '../lib/css-vars'
 import { Button } from './button'
 import { Input } from './input'
 import { Separator } from './separator'
@@ -115,13 +116,13 @@ export function SidebarProvider({
     <SidebarContext.Provider value={contextValue}>
       <div
         data-slot="sidebar-wrapper"
-        style={
-          {
+        style={{
+          ...cssVars({
             '--sidebar-width': SIDEBAR_WIDTH,
             '--sidebar-width-icon': SIDEBAR_WIDTH_ICON,
-            ...style,
-          } as React.CSSProperties
-        }
+          }),
+          ...style,
+        }}
         className={cn(
           // CONTRACT — inner-scroll app shell. Do NOT change to `min-h-svh` /
           // document-scroll. This wrapper is pinned to the DYNAMIC viewport
@@ -187,11 +188,7 @@ export function Sidebar({
           data-slot="sidebar"
           data-mobile="true"
           className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
-          style={
-            {
-              '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
-            } as React.CSSProperties
-          }
+          style={cssVars({ '--sidebar-width': SIDEBAR_WIDTH_MOBILE })}
           side={side}
         >
           <SheetHeader className="sr-only">

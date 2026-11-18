@@ -5,6 +5,7 @@ import { Slot } from 'radix-ui'
 import * as React from 'react'
 
 import { cn } from '../lib/cn'
+import { cssVars } from '../lib/css-vars'
 
 import { Skeleton } from './skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip'
@@ -230,11 +231,7 @@ export function SidebarMenuSkeleton({
       <Skeleton
         className="h-4 max-w-(--skeleton-width) flex-1"
         data-sidebar="menu-skeleton-text"
-        style={
-          {
-            '--skeleton-width': width,
-          } as React.CSSProperties
-        }
+        style={cssVars({ '--skeleton-width': width })}
       />
     </div>
   )

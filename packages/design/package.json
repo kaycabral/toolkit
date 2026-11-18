@@ -1,46 +1,88 @@
 {
   "name": "@cbrl/design",
-  "version": "0.0.0",
-  "private": true,
-  "license": "UNLICENSED",
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts",
-    "./globals.css": "./src/globals.css",
-    "./tokens.css": "./src/tokens.css"
+  "version": "0.1.0",
+  "description": "Design system on Radix + Tailwind v4: shadcn-style components, layout shells and design tokens with an overridable brand accent.",
+  "license": "MIT",
+  "author": "Kayron Cabral",
+  "homepage": "https://github.com/kaycabral/toolkit/tree/main/packages/design#readme",
+  "bugs": {
+    "url": "https://github.com/kaycabral/toolkit/issues"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaycabral/toolkit.git",
+    "directory": "packages/design"
+  },
+  "keywords": [
+    "design-system",
+    "react",
+    "radix",
+    "tailwindcss",
+    "shadcn"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json",
+    "./globals.css": "./dist/globals.css",
+    "./tokens.css": "./dist/tokens.css",
+    "./shadcn.css": "./dist/shadcn.css"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "tsdown",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --coverage"
+    "test": "vitest run --coverage",
+    "lint": "eslint .",
+    "check:package": "node scripts/check-client-directives.mjs && node ../../scripts/check-package.mjs --types --exclude-entrypoints ./globals.css ./tokens.css ./shadcn.css"
   },
   "dependencies": {
-    "class-variance-authority": "catalog:",
-    "clsx": "catalog:",
-    "date-fns": "^4.4.0",
-    "lucide-react": "catalog:",
-    "next-themes": "catalog:",
-    "radix-ui": "catalog:",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.14.0",
+    "radix-ui": "^1.4.3",
     "react-day-picker": "^9.14.0",
-    "shadcn": "^4.7.0",
-    "sonner": "catalog:",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
     "tw-animate-css": "^1.4.0"
   },
+  "peerDependencies": {
+    "next-themes": "^0.4.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwindcss": "^4.0.0"
+  },
   "devDependencies": {
+    "@arethetypeswrong/cli": "catalog:",
+    "@cbrl/eslint-config": "workspace:*",
     "@cbrl/testing": "workspace:*",
-    "@cbrl/tsconfig-base": "workspace:*",
+    "@cbrl/tsconfig": "workspace:*",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
     "@testing-library/user-event": "catalog:",
+    "@types/node": "catalog:",
     "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
     "jsdom": "catalog:",
+    "next-themes": "^0.4.6",
+    "publint": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "shadcn": "^4.7.0",
+    "tailwindcss": "^4.3.0",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
-  "peerDependencies": {
-    "react": "catalog:"
+  "publishConfig": {
+    "access": "public"
   }
 }

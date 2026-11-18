@@ -10,7 +10,7 @@ import { Calendar } from './calendar'
 import { Input } from './input'
 import { Popover, PopoverContent, PopoverTrigger } from './popover'
 
-// Flexible pt-BR date field for the whole monorepo. ALWAYS displays `dd/mm/aaaa`
+// Flexible pt-BR date field. ALWAYS displays `dd/mm/aaaa`
 // and emits/stores ISO `yyyy-mm-dd` — independent of the browser locale (unlike
 // a native `<input type="date">`). The consumer chooses the affordances:
 //   • presentation="input" + calendar (default) → type OR pick from the calendar

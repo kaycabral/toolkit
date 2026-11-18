@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import 'shadcn/tailwind.css';
+@import './shadcn.css';
 
 /*
  * Faz o Tailwind escanear os componentes do design system. Sem isso, classes
@@ -8,7 +8,7 @@
  * geradas no CSS final dos apps consumidores — Tailwind v4 ignora
  * node_modules/symlinks por padrão.
  */
-@source './**/*.{ts,tsx}';
+@source './**/*.{js,ts,tsx}';
 
 @custom-variant dark (&:is(.dark *));
 

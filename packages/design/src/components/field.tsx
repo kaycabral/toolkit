@@ -192,7 +192,7 @@ function FieldError({
   const content = React.useMemo(() => {
     if (children) return children
     if (!errors) return null
-    const list = errors.filter(Boolean) as Array<{ message?: string }>
+    const list = errors.filter((e): e is { message?: string } => e !== undefined)
     if (list.length === 1 && list[0]?.message) return list[0].message
     return (
       <ul className="ml-4 flex list-disc flex-col gap-1">
