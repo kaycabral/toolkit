@@ -1,6 +1,6 @@
 {
   "name": "@cbrl/pg",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Hardened node-postgres pool factory: bounded timeouts, idle-error handler, process-wide registry, Supabase CA pinning and optional Cloud SQL IAM auth.",
   "license": "MIT",
   "author": "Kayron Cabral",
