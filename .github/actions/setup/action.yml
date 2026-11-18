@@ -1,0 +1,24 @@
+name: Setup pnpm + Node
+description: Install pnpm (version from package.json `packageManager`) and Node (from .nvmrc), restore the pnpm store cache and install with a frozen lockfile.
+
+inputs:
+  working-directory:
+    description: Directory holding package.json, .nvmrc and pnpm-lock.yaml.
+    required: false
+    default: .
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v6
+      with:
+        package_json_file: ${{ inputs.working-directory }}/package.json
+        run_install: false
+    - uses: actions/setup-node@v7
+      with:
+        node-version-file: ${{ inputs.working-directory }}/.nvmrc
+        cache: pnpm
+        cache-dependency-path: ${{ inputs.working-directory }}/pnpm-lock.yaml
+    - run: pnpm install --frozen-lockfile
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}

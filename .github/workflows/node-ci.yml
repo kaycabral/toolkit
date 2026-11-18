@@ -1,0 +1,47 @@
+# Reusable CI for pnpm + Turborepo apps. Consume it pinned to a commit SHA:
+#
+#   jobs:
+#     ci:
+#       uses: kaycabral/toolkit/.github/workflows/node-ci.yml@<sha>
+#
+name: Node CI
+
+on:
+  workflow_call:
+    inputs:
+      scripts:
+        description: Space-separated root package.json scripts, run in order.
+        type: string
+        required: false
+        default: format:check lint typecheck test build
+      timeout-minutes:
+        type: number
+        required: false
+        default: 20
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          run_install: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run scripts
+        env:
+          SCRIPTS: ${{ inputs.scripts }}
+        run: |
+          for script in $SCRIPTS; do
+            echo "::group::pnpm $script"
+            pnpm run "$script"
+            echo "::endgroup::"
+          done

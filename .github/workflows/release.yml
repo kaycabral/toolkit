@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release:
+    # Off until the first manual publish exists on npm and each package has
+    # this workflow registered as its trusted publisher. Then set the repo
+    # variable RELEASE_ENABLED=true.
+    if: vars.RELEASE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      # npm trusted publishing (OIDC, no stored token) needs npm >= 11.5.1;
+      # Node 22 bundles npm 10. Provenance is attached automatically.
+      - run: npm install --global npm@^11.5.1
+      - uses: changesets/action@v2.1.2
+        with:
+          version-script: pnpm version-packages
+          publish-script: pnpm release
+          commit-message: 'chore(release): version packages'
+          pr-title: 'chore(release): version packages'
