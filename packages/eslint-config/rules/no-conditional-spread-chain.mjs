@@ -1,8 +1,6 @@
-// Custom rule: proíbe spread condicional aninhado em outro spread condicional.
+// Custom rule: bans a conditional spread nested inside another conditional spread.
 //
-// Codifica decisão canônica do PR #971 (commit `abec9de7`) + recidiva no
-// PR #972 (commit `285e0f1c`). Memória de projeto não previne recidiva
-// cross-instância de Claude; análise sintática previne.
+// A recurring review finding turned into a syntactic check, so it cannot regress.
 //
 // Anti-pattern:
 //
@@ -10,19 +8,19 @@
 //     base: 1,
 //     ...(c1
 //       ? { foo: mapValue({
-//           ...(c2 ? { a: x } : {}),         // ← spread aninhado dentro
-//           ...(c3 ? { b: y } : {}),         //   de outro spread cond
+//           ...(c2 ? { a: x } : {}),         // ← spread nested inside
+//           ...(c3 ? { b: y } : {}),         //   another conditional spread
 //         }) }
 //       : {}),
 //   }
 //
-// Por quê é ruim:
-//   - Legibilidade ruim (nesting profundo, ternário + spread misturados)
-//   - TypeScript infer fica frágil (vira `Partial<X>` / `Record<string,unknown>`)
-//   - Repetição da expressão de teste (`c1.x` 3-6× no mesmo bloco)
-//   - Esconde forma final do objeto — leitor expande mentalmente
+// Why it hurts:
+//   - Poor readability (deep nesting, ternaries mixed with spreads)
+//   - Fragile TypeScript inference (degrades to `Partial<X>` / `Record<string, unknown>`)
+//   - The test expression repeats (`c1.x` 3-6 times in the same block)
+//   - Hides the final shape of the object — the reader expands it mentally
 //
-// Padrão correto: record intermediário + `if`s explícitos.
+// Correct pattern: an intermediate record plus explicit `if`s.
 //
 //   const inner: Record<string, X> = {}
 //   if (c2) inner.a = x
@@ -30,20 +28,20 @@
 //   const obj: Record<string, Y> = { base: 1 }
 //   if (c1) obj.foo = mapValue(inner)
 //
-// Distinção (NÃO confundir):
-//   - Spread condicional ÚNICO E RASO (`...(opts.foo ? { foo: ... } : {})`)
-//     é idiomático — esta rule NÃO dispara nele.
-//   - Só dispara quando há aninhamento (spread cond dentro de spread cond).
+// Do NOT confuse with:
+//   - A SINGLE, SHALLOW conditional spread (`...(opts.foo ? { foo: ... } : {})`)
+//     is idiomatic — this rule does NOT fire on it.
+//   - It only fires on nesting (a conditional spread inside a conditional spread).
 
 function isConditionalSpread(node) {
   return node?.type === 'SpreadElement' && node.argument?.type === 'ConditionalExpression'
 }
 
-// Walk recursivo procurando outro spread condicional dentro do nó dado.
-// Caminha por ObjectExpression, CallExpression args, ArrayExpression,
-// ConditionalExpression branches e Property values — cobre os formatos
-// reais do anti-pattern (incluindo o caso `mapValue({...cond...})` onde o
-// spread aninhado mora dentro de uma chamada de helper).
+// Recursive walk looking for another conditional spread inside the given node.
+// Visits ObjectExpression, CallExpression args, ArrayExpression,
+// ConditionalExpression branches and Property values — the real shapes of the
+// anti-pattern (including `mapValue({...cond...})`, where the nested spread
+// lives inside a helper call).
 function containsConditionalSpread(node, depthBudget = 50) {
   if (!node || depthBudget <= 0) return false
   if (isConditionalSpread(node)) return true

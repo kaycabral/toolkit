@@ -40,7 +40,7 @@ export const layering = [
             {
               group: ['react', 'react-dom', 'next', 'next/*'],
               message:
-                'core/ é o functional core: sem React/Next. Estado, efeito ou render vivem em ui/ ou adapters/.',
+                'core/ is the functional core: no React/Next. State, effects and rendering live in ui/ or adapters/.',
             },
             {
               group: [
@@ -53,17 +53,17 @@ export const layering = [
                 'server-only',
               ],
               message:
-                'core/ é puro: sem Firestore/admin/server-only. Acesso a dado mora em adapters/ (ex.: *.repo.ts).',
+                'core/ is pure: no Firestore/admin/server-only. Data access lives in adapters/ (e.g. *.repo.ts).',
             },
             {
               group: ['**/adapters/*', '**/ui/*', '@/features/*/adapters/*', '@/features/*/ui/*'],
               message:
-                'Dependência só desce (ui→adapters→core). core/ não pode importar adapters/ nem ui/.',
+                'Dependencies only point down (ui→adapters→core): core/ must not import adapters/ or ui/.',
             },
             {
               group: ['@/app/*', '@/app/**'],
               message:
-                'features/ não importa app/ — app é a casca externa de roteamento (inversão).',
+                'features/ must not import app/: app is the outer routing shell (inversion).',
             },
           ],
         },
@@ -83,7 +83,7 @@ export const layering = [
           patterns: [
             {
               group: ['react', 'react-dom', 'next', 'next/*'],
-              message: 'domain/ é o kernel puro: sem React/Next.',
+              message: 'domain/ is the pure kernel: no React/Next.',
             },
             {
               group: [
@@ -95,11 +95,12 @@ export const layering = [
                 '@/shared/db/*',
                 'server-only',
               ],
-              message: 'domain/ é puro: sem Firestore/admin/server-only.',
+              message: 'domain/ is pure: no Firestore/admin/server-only.',
             },
             {
               group: ['@/shared/*', '@/features/*', '@/app/*'],
-              message: 'domain/ é o anel mais interno — não importa shared/, features/ nem app/.',
+              message:
+                'domain/ is the innermost ring: it must not import shared/, features/ or app/.',
             },
           ],
         },
@@ -123,7 +124,7 @@ export const layering = [
             {
               group: ['@/app/*', '@/app/**'],
               message:
-                'features/ não importa app/ — app é a casca externa de roteamento (inversão).',
+                'features/ must not import app/: app is the outer routing shell (inversion).',
             },
           ],
         },
@@ -140,7 +141,7 @@ export const layering = [
             {
               group: ['@/features/*', '@/features/**', '@/app/*', '@/app/**'],
               message:
-                'shared/ é infra abaixo de features/ — não importa features/ nem app/ (inversão de camada).',
+                'shared/ is infrastructure below features/: it must not import features/ or app/ (layer inversion).',
             },
           ],
         },
@@ -156,8 +157,7 @@ export const layering = [
           patterns: [
             {
               group: ['@/app/*', '@/app/**'],
-              message:
-                'components/ é visual compartilhado — não importa app/ (inversão de camada).',
+              message: 'components/ is shared UI: it must not import app/ (layer inversion).',
             },
           ],
         },
@@ -186,13 +186,13 @@ export const layering = [
               from: ['feat-core'],
               disallow: ['feat-adapters', 'feat-ui'],
               message:
-                'core ({{from}}) não importa {{target}} — dependência só desce (ui→adapters→core).',
+                'core ({{from}}) must not import {{target}}: dependencies only point down (ui→adapters→core).',
             },
             {
               from: ['feat-adapters'],
               disallow: ['feat-ui'],
               message:
-                'adapters ({{from}}) não importa ui — o fluxo é ui→adapters, nunca o contrário.',
+                'adapters ({{from}}) must not import ui: the flow is ui→adapters, never the reverse.',
             },
           ],
         },
