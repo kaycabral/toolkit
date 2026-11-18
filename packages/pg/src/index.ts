@@ -1,15 +1,13 @@
 import { requireEnv } from '@cbrl/env'
-import { AuthTypes, Connector, IpAddressTypes } from '@google-cloud/cloud-sql-connector'
 import { Pool, type PoolConfig } from 'pg'
 import { stripSslParams } from './supabase'
 
 export { stripSslParams, SUPABASE_ROOT_CA_2021, supabaseSsl } from './supabase'
 
 /**
- * Shared Postgres pool factory for the monorepo's Cloud SQL databases (oilio
- * event store + the sovereign product base). Both connect to the SAME instance
- * (`oilio-db`, 1 instance / 2 logical DBs) and want the SAME connection policy —
- * so the IAM-vs-password decision lives here once, not duplicated per package.
+ * Hardened `pg` pool factory: one connection policy (timeouts, idle-error
+ * handling, process-wide registry, TLS) shared by every database a consumer
+ * opens, so it is not re-derived per app.
  *
  * Two modes, picked by `<PREFIX>_USE_IAM_AUTH`:
  *
@@ -21,11 +19,14 @@ export { stripSslParams, SUPABASE_ROOT_CA_2021, supabaseSsl } from './supabase'
  *     DB-level IAM user. Pool creation is async (the connector resolves socket
  *     options over the network).
  *
- *   - **Local / CI (password):** a plain connection string against the ephemeral
- *     docker / `services: postgres` instance, which has no IAM auth. Synchronous.
+ *     Needs the optional peer `@google-cloud/cloud-sql-connector`, loaded only
+ *     in this mode.
  *
- * Lazy + small (ADR 0011 D4): callers create the pool on first use, `max: 5` so a
- * serverless instance doesn't exhaust Cloud SQL connections.
+ *   - **Password:** a plain connection string (local docker, CI service,
+ *     Supabase). Synchronous. Pass `passwordModeSsl: supabaseSsl` for Supabase.
+ *
+ * Lazy + small: callers create the pool on first use, `max: 5` so a serverless
+ * instance doesn't exhaust database connections.
  */
 
 const POOL_MAX = 5
@@ -105,25 +106,25 @@ function attachPoolErrorHandler(pool: Pool, database: string): Pool {
 export type PoolEnvConfig = {
   /**
    * Env var holding the connection string in password mode (local/CI), e.g.
-   * `OILIO_DATABASE_URL` or `DATABASE_URL`.
+   * `DATABASE_URL`.
    */
   readonly connectionStringEnvVar: string
   /**
    * Env var that, when `'true'`, switches this pool to IAM auth. Distinct per
-   * database so one can flip independently, e.g. `OILIO_USE_IAM_AUTH`.
+   * database so one can flip independently, e.g. `APP_USE_IAM_AUTH`.
    */
   readonly iamAuthEnvVar: string
   /**
    * Env var holding the Cloud SQL connection name (`project:region:instance`)
-   * for the connector, e.g. `OILIO_CLOUDSQL_INSTANCE`.
+   * for the connector, e.g. `APP_CLOUDSQL_INSTANCE`.
    */
   readonly instanceEnvVar: string
   /**
    * Env var holding the IAM DB user (the runtime SA email WITHOUT the
-   * `.gserviceaccount.com` suffix), e.g. `OILIO_IAM_DB_USER`.
+   * `.gserviceaccount.com` suffix), e.g. `APP_IAM_DB_USER`.
    */
   readonly iamUserEnvVar: string
-  /** Logical database name to connect to in IAM mode, e.g. `oilio`. */
+  /** Logical database name to connect to in IAM mode, e.g. `app`. */
   readonly database: string
   /**
    * Optional TLS policy for password mode, resolved from the connection string
@@ -159,7 +160,7 @@ export type ManagedPool = {
  * request sees. This is the canonical fix for the "duplicate module singleton"
  * hazard (the same reason Prisma/pg examples pin their client to globalThis).
  */
-const REGISTRY = Symbol.for('@cbrl/db.managedPools')
+const REGISTRY = Symbol.for('@cbrl/pg.managedPools')
 
 type PoolRegistry = Map<string, ManagedPool>
 
@@ -200,6 +201,7 @@ function createPasswordPool(cfg: PoolEnvConfig): ManagedPool {
 export async function createManagedPool(cfg: PoolEnvConfig): Promise<ManagedPool> {
   if (!iamEnabled(cfg)) return createPasswordPool(cfg)
 
+  const { AuthTypes, Connector, IpAddressTypes } = await import('@google-cloud/cloud-sql-connector')
   const connector = new Connector()
   const clientOpts = await connector.getOptions({
     instanceConnectionName: requireEnv(cfg.instanceEnvVar),
