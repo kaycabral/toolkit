@@ -1,0 +1,40 @@
+{
+  "name": "@cbrl/commitlint-config",
+  "version": "0.1.0",
+  "description": "Shared commitlint config: Conventional Commits with a required scope and a 72-char header.",
+  "license": "MIT",
+  "author": "Kayron Cabral",
+  "homepage": "https://github.com/kaycabral/toolkit/tree/main/packages/commitlint-config#readme",
+  "bugs": {
+    "url": "https://github.com/kaycabral/toolkit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaycabral/toolkit.git",
+    "directory": "packages/commitlint-config"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./index.mjs"
+  },
+  "files": [
+    "index.mjs"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "check:package": "node ../../scripts/check-package.mjs"
+  },
+  "dependencies": {
+    "@commitlint/config-conventional": "^19.8.1"
+  },
+  "peerDependencies": {
+    "@commitlint/cli": ">=19"
+  },
+  "devDependencies": {
+    "@commitlint/lint": "^19.8.1",
+    "publint": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
