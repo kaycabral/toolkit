@@ -4,7 +4,8 @@
 
 # Conventional Branches — valida prefixo da branch (não aplica em main).
 branch=$(git rev-parse --abbrev-ref HEAD)
-if [ "$branch" != "main" ]; then
+# changeset-release/* is created and owned by the Changesets release bot.
+if [ "$branch" != "main" ] && [ "${branch#changeset-release/}" = "$branch" ]; then
   echo "$branch" | grep -qE '^(feat|fix|chore|docs|refactor|test|perf|build|ci|style|revert)/' || {
     echo "❌ Branch deve começar com prefixo Conventional: feat/, fix/, chore/, docs/, refactor/, test/, perf/, build/, ci/, style/, revert/"
     echo "   Atual: $branch"
