@@ -69,7 +69,7 @@ export const noEnvValueFallback = {
     schema: [],
     messages: {
       envFallback:
-        "Fallback literal em `process.env.{{varName}}` mascara misconfig — o app roda com um valor trivial em vez de quebrar. Leia a env e falhe alto se ausente (`const v = process.env.{{varName}}; if (!v) throw …`, ou um helper `env('{{varName}}')`). Default não-valor intencional é ok: `?? null`, cadeia env→env, ou path computado.",
+        "A literal fallback on `process.env.{{varName}}` hides misconfiguration: the app runs with a trivial value instead of failing. Read it fail-fast (`requireEnv('{{varName}}')` from @cbrl/env). Non-value defaults are fine: `?? null`, an env→env chain, or a computed path.",
     },
   },
   create(context) {

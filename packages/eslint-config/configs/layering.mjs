@@ -18,9 +18,9 @@
 // hasn't adopted feature slices has no matching files, so this layer is a no-op
 // there. Adopt the folders, get the wall; nothing to opt into per-app.
 //
-// External packages (`@oilio/shared`, `@cbrl/design`, …) are deliberately
+// External packages (`@acme/shared`, `@cbrl/design`, …) are deliberately
 // unclassified: `default: 'allow'` means only the upward-import rules below bite.
-// `@oilio/shared` is itself pure domain, so core importing it is correct.
+// A pure-domain shared package can be imported from core.
 
 import boundaries from 'eslint-plugin-boundaries'
 import { GLOB_SRC } from '../globs.mjs'

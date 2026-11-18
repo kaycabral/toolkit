@@ -30,10 +30,6 @@
 //   const obj: Record<string, Y> = { base: 1 }
 //   if (c1) obj.foo = mapValue(inner)
 //
-// Referência canonical: `buildPlanSnapshot` em
-// `packages/oilio/shared/src/utils/plan-snapshot.ts` (resolução da
-// recidiva flagada em #971).
-//
 // Distinção (NÃO confundir):
 //   - Spread condicional ÚNICO E RASO (`...(opts.foo ? { foo: ... } : {})`)
 //     é idiomático — esta rule NÃO dispara nele.
@@ -91,7 +87,7 @@ export const noConditionalSpreadChain = {
     schema: [],
     messages: {
       chain:
-        'Spread condicional aninhado dentro de outro spread condicional. Refatore com record intermediário + `if`s explícitos — ver `buildPlanSnapshot` em `@oilio/shared/src/utils/plan-snapshot.ts` (decisão canônica PR #971). Spread condicional único e raso é OK; só aninhamento é proibido.',
+        'Conditional spread nested inside another conditional spread. Build an intermediate record with explicit `if`s instead. A single, shallow conditional spread is fine; only nesting is banned.',
     },
   },
   create(context) {

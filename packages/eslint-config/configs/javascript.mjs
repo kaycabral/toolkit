@@ -12,7 +12,7 @@ import { cbrlPlugin } from '../plugin.mjs'
 export const javascript = [
   js.configs.recommended,
   {
-    // Invariant #7 backstop: neutralizes every `eslint-disable*` / inline
+    // Backstop for `cbrl/no-eslint-disable`: neutralizes every `eslint-disable*` / inline
     // `/* eslint */` comment (the suppressed rule fires anyway), so the
     // `cbrl/no-eslint-disable` error below can't itself be silenced inline.
     linterOptions: { noInlineConfig: true },

@@ -1,7 +1,7 @@
-// Canonical ESLint flat config for the cbrl monorepo.
+// Canonical ESLint flat config (`@cbrl/eslint-config`).
 //
 // Consumed by `apps/<x>/eslint.config.mjs` via:
-//   import cbrlBase from '@cbrl/eslint-base'
+//   import cbrlBase from '@cbrl/eslint-config'
 //   export default cbrlBase
 //
 // Workspaces that need extra rules can spread + extend:

@@ -36,6 +36,8 @@ export const GLOB_IGNORES = [
   '**/test-results/**',
   '**/.stryker-tmp/**',
   '**/*.config.js',
+  // Rule-test fixtures: deliberately violating source fed to RuleTester/tsc.
+  '**/rules/fixtures/**',
 ]
 
 /**

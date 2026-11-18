@@ -1,8 +1,5 @@
-// Custom rule: proíbe TODA directive `eslint-disable*` no código.
-//
-// Codifica a regra invariável #7 do CLAUDE.md do monorepo:
-//   "ESLint: nunca desabilitar. Sem eslint-disable*, sem overrides ad-hoc.
-//    Se a regra está errada, ajuste em eslint.config.mjs por PR."
+// Custom rule: bans EVERY `eslint-disable*` directive in code. A wrong rule is
+// changed in eslint.config.mjs through review, never silenced inline.
 //
 // Por que custom e não só o nativo `linterOptions.noInlineConfig`:
 //   noInlineConfig neutraliza os directives mas reporta apenas WARNING (não
@@ -15,13 +12,13 @@ export const noEslintDisable = {
   meta: {
     type: 'problem',
     docs: {
-      description: 'Disallow all eslint-disable directives (invariant #7 from CLAUDE.md)',
+      description: 'Disallow all eslint-disable directives',
       recommended: true,
     },
     schema: [],
     messages: {
       disableForbidden:
-        'eslint-disable directive is forbidden. If the rule is wrong, fix it in eslint.config.mjs (regra invariável #7 do CLAUDE.md).',
+        'eslint-disable directive is forbidden. If the rule is wrong, change it in eslint.config.mjs.',
     },
   },
   create(context) {

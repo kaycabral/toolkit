@@ -1,33 +1,16 @@
-# Custom rules — `cbrl/*`
+# Custom rules: `cbrl/*`
 
-Cada regra codifica um invariante do monorepo que built-ins não cobrem. O rationale completo (anti-pattern, por quê, padrão correto) vive no header de cada `.mjs` — fonte única, não duplicar aqui.
-
-| Regra                         | Codifica                                                                                                                                                                                                         | Built-in que complementa                                                 |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `no-eslint-disable`           | Invariante #7 (nunca desabilitar) — reporta **error**                                                                                                                                                            | `noInlineConfig` (nativo, só warning) → usado como backstop unbypassable |
-| `no-conditional-spread-chain` | Decisão PR #971/#972 (spread cond aninhado)                                                                                                                                                                      | `no-nested-ternary` (forma ternária direta)                              |
-| `no-env-value-fallback`       | fail-fast > silent default em `process.env`                                                                                                                                                                      | —                                                                        |
-| `no-non-doc-comments`         | ADR 0018 (zero comentário no oilio) — só pragma de máquina + TSDoc anexado com `@tag` sobrevivem; determinismo via `parserServices.program`. `error` só no oilio. Autofix remove (inclui container `{}` de JSX). | `no-inline-comments`, `line-comment-position` (nativos, complementam)    |
-
-> `no-eslint-disable` é error + `linterOptions.noInlineConfig: true` (em `../configs/javascript.mjs`) como backstop: o nativo sozinho só emite warning (não barra `eslint .` sem `--max-warnings 0`); a custom rule dá o hard-fail e o `noInlineConfig` impede que ela seja silenciada inline.
-
-## Convenção de autoria
-
-Toda regra custom é um **trio**:
+Each rule is a pair:
 
 ```
 rules/
-  <name>.mjs        # a regra: header com rationale + export const <camelCase>
-  <name>.test.mjs   # RuleTester com casos valid + invalid
+  <name>.mjs        # header with the rationale, then `export const <camelCase> = { meta, create }`
+  <name>.test.mjs   # RuleTester (eslint) + node:test, valid and invalid cases
 ```
 
-1. **`<name>.mjs`** — header em prosa (o porquê + anti-pattern + padrão correto), depois `export const <camelCase> = { meta, create }`. `meta.docs.description` em inglês.
-2. **`<name>.test.mjs`** — `RuleTester` do `eslint` + `node:test`. Regras que inspecionam AST de TS (`TSAsExpression`, etc.) precisam de `languageOptions.parser: tseslint.parser`.
-3. **Registrar** em [`../plugin.mjs`](../plugin.mjs) sob o id kebab-case.
-4. **Ativar** na layer apropriada (`../configs/javascript.mjs` para regras gerais, `../configs/typescript.mjs` para regras TS-only).
+To add one: write the pair, register it in [`../plugin.mjs`](../plugin.mjs) under
+its kebab-case id, enable it in the right layer (`../configs/javascript.mjs` for
+general rules, `../configs/typescript.mjs` for TS-only ones) and add a changeset.
+Rules that inspect TS nodes need `languageOptions.parser: tseslint.parser` in tests.
 
-`pnpm test` (`node --test rules/*.test.mjs`) roda toda a suíte.
-
-## Gotcha — testar `no-eslint-disable`
-
-Não dá pra testar com um `/* eslint-disable */` sem escopo: ele desabilita TODA regra do arquivo, inclusive a própria, e o report se auto-suprime. Use sempre um disable escopado a outra regra (`/* eslint-disable no-console */`) nos casos `invalid`.
+`pnpm test` runs the suite. Fixtures for type-aware tests live in `fixtures/`.

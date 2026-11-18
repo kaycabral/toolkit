@@ -57,7 +57,7 @@ export const noNonDocComments = {
     fixable: 'code',
     docs: {
       description:
-        'Disallow every comment except machine pragmas and compiler-attached TSDoc — the code is the single source of truth (oilio zero-comment policy).',
+        'Disallow every comment except machine pragmas and compiler-attached TSDoc — the code is the single source of truth.',
       recommended: false,
     },
     schema: [],
