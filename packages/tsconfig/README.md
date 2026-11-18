@@ -1,56 +1,29 @@
-# @cbrl/tsconfig-base
+# @cbrl/tsconfig
 
-Canonical TypeScript compiler options shared by every app and package no monorepo cbrl. Source of truth para `target`, `module`, `strict`, etc. Cada workspace estende este config e adiciona apenas o que é específico (paths, includes, jsx).
+Strict TypeScript presets for bundler-resolved projects (`moduleResolution: bundler`).
 
-## Como consumir
+```sh
+pnpm add -D @cbrl/tsconfig typescript
+```
 
-1. Adicione como devDependency no workspace:
+| Preset                              | Use for                                                |
+| ----------------------------------- | ------------------------------------------------------ |
+| `@cbrl/tsconfig/base.json`          | Node scripts, server packages                          |
+| `@cbrl/tsconfig/nextjs.json`        | Next.js apps (DOM lib, `jsx: preserve`, `next` plugin) |
+| `@cbrl/tsconfig/react-library.json` | React packages (`jsx: react-jsx`)                      |
 
-   ```jsonc
-   // apps/<seu-app>/package.json
-   {
-     "devDependencies": {
-       "@cbrl/tsconfig-base": "workspace:*",
-     },
-   }
-   ```
+```jsonc
+// tsconfig.json of a Next.js app
+{
+  "extends": "@cbrl/tsconfig/nextjs.json",
+  "compilerOptions": { "paths": { "@/*": ["./src/*"] } },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"],
+}
+```
 
-2. Estenda no `tsconfig.json` do workspace:
+`include`, `exclude` and `paths` stay in the project: TypeScript resolves them
+relative to the file that declares them.
 
-   ```jsonc
-   // apps/<seu-app>/tsconfig.json
-   {
-     "extends": "@cbrl/tsconfig-base/base.json",
-     "compilerOptions": {
-       "lib": ["dom", "dom.iterable", "esnext"],
-       "jsx": "preserve",
-       "paths": {
-         "@/*": ["./src/*"],
-       },
-     },
-     "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-     "exclude": ["node_modules"],
-   }
-   ```
-
-3. `pnpm install` — pnpm resolve `@cbrl/tsconfig-base` via workspace protocol.
-
-## O que está aqui (e por quê)
-
-| Opção                        | Valor               | Por quê                                                  |
-| ---------------------------- | ------------------- | -------------------------------------------------------- |
-| `target`                     | `ES2022`            | Node 22 (engine mínimo do monorepo) + browsers modernos. |
-| `lib`                        | `["ES2022"]`        | DOM lib é per-app (`lib` é override, não extends).       |
-| `module`, `moduleResolution` | `esnext`, `bundler` | Casamento com Next.js + Vite.                            |
-| `strict`                     | `true`              | Não negociável.                                          |
-| `noUncheckedIndexedAccess`   | `true`              | Pega `arr[i] === undefined` em tempo de compilação.      |
-| `isolatedModules`            | `true`              | Required pelo SWC/esbuild.                               |
-| `allowJs`, `noEmit`          | `false`, `true`     | TS é só typechecking; build é via bundler.               |
-
-## Atualizando
-
-Bump `version` no `package.json` daqui quando mudar algo. Workspaces que usam `workspace:*` pegam automaticamente no próximo `pnpm install`. Se publicarmos isso como pacote npm interno no futuro, será via `pnpm up @cbrl/tsconfig-base -F <workspace>`.
-
-## Pattern
-
-Esse pacote faz parte do padrão de **shared canonical config**. Não duplique opções daqui em workspaces — extenda.
+Highlights of `base`: `strict`, `noUncheckedIndexedAccess`, `isolatedModules`,
+`target: ES2022`, `noEmit` (bundlers emit).

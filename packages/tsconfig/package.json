@@ -1,11 +1,40 @@
 {
-  "name": "@cbrl/tsconfig-base",
+  "name": "@cbrl/tsconfig",
   "version": "0.1.0",
-  "private": true,
-  "license": "UNLICENSED",
-  "description": "Canonical TypeScript compiler options shared by every app/package in the cbrl monorepo. Consumed via tsconfig `extends`.",
-  "files": [
-    "base.json"
+  "description": "Strict TypeScript presets (base, Next.js app, React library) for bundler-resolved projects.",
+  "license": "MIT",
+  "author": "Kayron Cabral",
+  "homepage": "https://github.com/kaycabral/toolkit/tree/main/packages/tsconfig#readme",
+  "bugs": {
+    "url": "https://github.com/kaycabral/toolkit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaycabral/toolkit.git",
+    "directory": "packages/tsconfig"
+  },
+  "keywords": [
+    "tsconfig",
+    "typescript",
+    "nextjs"
   ],
-  "main": "base.json"
+  "exports": {
+    "./base.json": "./base.json",
+    "./nextjs.json": "./nextjs.json",
+    "./react-library.json": "./react-library.json"
+  },
+  "files": [
+    "base.json",
+    "nextjs.json",
+    "react-library.json"
+  ],
+  "scripts": {
+    "check:package": "node ../../scripts/check-package.mjs"
+  },
+  "devDependencies": {
+    "publint": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -1,5 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Base (strict, bundler resolution)",
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022"],
