@@ -1,27 +1,65 @@
 {
   "name": "@cbrl/testing",
-  "version": "0.0.0",
-  "private": true,
-  "license": "UNLICENSED",
-  "type": "module",
-  "exports": {
-    "./firebase": "./src/firebase/index.ts",
-    "./vitest": "./src/vitest/index.ts",
-    "./vitest/server-only-shim": "./src/vitest/server-only-shim.ts",
-    "./a11y": "./src/vitest/a11y.ts"
+  "version": "0.1.0",
+  "description": "Vitest helpers: shared v8 coverage base, server-only shim, jest-axe a11y matcher and a Firebase emulator env helper.",
+  "license": "MIT",
+  "author": "Kayron Cabral",
+  "homepage": "https://github.com/kaycabral/toolkit/tree/main/packages/testing#readme",
+  "bugs": {
+    "url": "https://github.com/kaycabral/toolkit/issues"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaycabral/toolkit.git",
+    "directory": "packages/testing"
+  },
+  "keywords": [
+    "vitest",
+    "testing",
+    "coverage",
+    "a11y",
+    "jest-axe"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./a11y": "./dist/a11y.mjs",
+    "./firebase": "./dist/firebase.mjs",
+    "./vitest": "./dist/vitest.mjs",
+    "./vitest/server-only-shim": "./dist/vitest/server-only-shim.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "tsdown",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --coverage"
+    "test": "vitest run --coverage",
+    "check:package": "node ../../scripts/check-package.mjs --types",
+    "lint": "eslint ."
   },
   "dependencies": {
-    "@cbrl/env": "workspace:*",
-    "jest-axe": "catalog:"
+    "@cbrl/env": "workspace:^",
+    "jest-axe": "^10.0.0"
+  },
+  "peerDependencies": {
+    "vitest": ">=3"
   },
   "devDependencies": {
-    "@cbrl/tsconfig-base": "workspace:*",
+    "@arethetypeswrong/cli": "catalog:",
+    "@cbrl/eslint-config": "workspace:*",
+    "@cbrl/tsconfig": "workspace:*",
     "@types/jest-axe": "catalog:",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "publint": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -1,5 +1,5 @@
 /**
- * Shared vitest coverage base (v8) for the monorepo. Apps spread it into their
+ * Shared vitest coverage base (v8). Apps spread it into their
  * own `coverage` block and add the `thresholds` inline:
  *
  *   import { coverageBase } from '@cbrl/testing/vitest'
