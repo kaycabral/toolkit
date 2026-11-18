@@ -1,12 +1,12 @@
 // Custom rule: bans EVERY `eslint-disable*` directive in code. A wrong rule is
 // changed in eslint.config.mjs through review, never silenced inline.
 //
-// Por que custom e não só o nativo `linterOptions.noInlineConfig`:
-//   noInlineConfig neutraliza os directives mas reporta apenas WARNING (não
-//   configurável pra error) — não barra um lint que roda sem `--max-warnings 0`.
-//   Esta rule reporta ERROR (hard-fail). O `noInlineConfig` fica ligado em
-//   paralelo como backstop: torna o disable inerte, então NÃO dá pra silenciar
-//   esta própria regra com um `// eslint-disable-line cbrl/no-eslint-disable`.
+// Why a custom rule and not just the native `linterOptions.noInlineConfig`:
+//   noInlineConfig neutralizes the directives but only reports a WARNING (not
+//   configurable as an error), so it does not fail a lint run without
+//   `--max-warnings 0`. This rule reports an ERROR (hard fail). `noInlineConfig`
+//   stays on alongside it as a backstop: it makes the directive inert, so this
+//   rule cannot be silenced with `// eslint-disable-line cbrl/no-eslint-disable`.
 
 export const noEslintDisable = {
   meta: {

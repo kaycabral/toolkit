@@ -18,8 +18,10 @@ Also in this repo:
 
 - **Reusable CI**: [`.github/workflows/node-ci.yml`](.github/workflows/node-ci.yml), consumed with
   `uses: kaycabral/toolkit/.github/workflows/node-ci.yml@<sha>`.
-- **Renovate preset**: [`default.json`](default.json), consumed with
-  `{ "extends": ["github>kaycabral/toolkit"] }`.
+- **Dependency updates**: each consumer runs Dependabot with a `cbrl-toolkit`
+  group, so a toolkit release lands as one PR per app. Copy
+  [`.github/dependabot.yml`](.github/dependabot.yml) and add the app's workspace
+  directories.
 
 ## Development
 

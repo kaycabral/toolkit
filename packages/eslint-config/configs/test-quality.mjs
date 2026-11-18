@@ -1,5 +1,4 @@
-// Layer: test-quality & ownership gates (paved road). See CONTRIBUTING.md
-// §"Princípios de engenharia". Prefer the canonical community plugin over a
+// Layer: test-quality & ownership gates (paved road). Prefer the canonical community plugin over a
 // custom rule; a built-in `no-restricted-*` is used ONLY where no plugin rule
 // exists (the data-testid and raw-primitive bans). Existing violations are
 // grandfathered via the native bulk-suppressions file and pruned over time —

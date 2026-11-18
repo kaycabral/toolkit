@@ -1,30 +1,29 @@
-// Custom rule: proíbe fallback hardcoded de VALOR em `process.env.<ANY>`.
+// Custom rule: bans a hardcoded VALUE fallback on `process.env.<ANY>`.
 //
-// Codifica princípio canônico do harness: "fail-fast > silent default".
-// Vale pra QUALQUER env var (não só secrets): um default literal mascara
-// misconfig — o app roda com um valor trivial em vez de quebrar e expor que a
-// env não foi setada.
+// Encodes "fail-fast over silent default". It applies to ANY env var, not only
+// secrets: a literal default hides misconfiguration — the app runs with a
+// trivial value instead of failing and revealing the variable was never set.
 //
-// Anti-pattern detectado (right operand é um literal de VALOR):
+// Flagged anti-pattern (the right operand is a VALUE literal):
 //   const url = process.env.APP_URL ?? 'http://localhost:3000'
 //   const x   = process.env.X || 'default'
 //   process.env.X ??= 'literal'
 //   process.env.X ||= 'literal'
-//   const p   = process.env.A ?? process.env.B ?? 'literal'   // cadeia que termina em literal
+//   const p   = process.env.A ?? process.env.B ?? 'literal'   // chain ending in a literal
 //
-// Padrão correto: leia e falhe alto se ausente.
+// Correct pattern: read it and fail loudly when missing.
 //   const url = process.env.APP_URL
 //   if (!url) throw new Error('APP_URL not set')
-//   // ou um helper `env('APP_URL')` que faz isso.
+//   // or `requireEnv('APP_URL')` from @cbrl/env.
 //
-// NÃO viola (default não é literal de valor — não mascara misconfig):
-//   - `||` booleano / lógica: `if (process.env.X || process.env.Y)`, `!!a || !!b`
-//   - cadeia env→env sem literal: `process.env.A ?? process.env.B` (termina em throw downstream)
-//   - normalização de ausência: `process.env.X ?? null`, `?? undefined`
-//   - fallback que não é literal: `process.env.XDG_CONFIG_HOME ?? join(homedir(), ...)`
+// NOT a violation (the default is not a value literal, so nothing is masked):
+//   - boolean / logical `||`: `if (process.env.X || process.env.Y)`, `!!a || !!b`
+//   - env→env chain with no literal: `process.env.A ?? process.env.B` (throws downstream)
+//   - absence normalization: `process.env.X ?? null`, `?? undefined`
+//   - non-literal fallback: `process.env.XDG_CONFIG_HOME ?? join(homedir(), ...)`
 
-// Literal de VALOR: string/number/boolean/bigint/template. Exclui `null`
-// (ESLint: Literal com value === null) — `?? null` é normalização, não default.
+// VALUE literal: string/number/boolean/bigint/template. Excludes `null`
+// (an ESLint Literal with value === null): `?? null` normalizes, it is not a default.
 function isValueLiteralFallback(node) {
   if (!node) return false
   if (node.type === 'TemplateLiteral') return true
@@ -41,8 +40,8 @@ function isProcessEnvAccess(node) {
   )
 }
 
-// `left` "vem de process.env" se é um acesso direto OU uma cadeia ??/|| cuja
-// raiz à esquerda é process.env — pega `process.env.A ?? process.env.B ?? 'lit'`.
+// `left` "comes from process.env" when it is a direct access OR a ??/|| chain
+// whose leftmost root is process.env — catches `process.env.A ?? process.env.B ?? 'lit'`.
 function leftRootIsProcessEnv(node) {
   if (isProcessEnvAccess(node)) return true
   if (node?.type === 'LogicalExpression' && (node.operator === '??' || node.operator === '||')) {
@@ -51,7 +50,7 @@ function leftRootIsProcessEnv(node) {
   return false
 }
 
-// Nome da env mais à esquerda (pra mensagem), descendo a cadeia ??/||.
+// Leftmost env var name (for the message), walking down the ??/|| chain.
 function leftmostEnvVarName(node) {
   if (isProcessEnvAccess(node)) return node.property?.name
   if (node?.type === 'LogicalExpression') return leftmostEnvVarName(node.left)
