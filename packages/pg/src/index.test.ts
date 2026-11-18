@@ -15,50 +15,40 @@ vi.mock('pg', () => ({
   },
 }))
 
-const getOptions = vi.fn(() => Promise.resolve({ host: '/sock', ssl: false }))
-const connectorClose = vi.fn()
-vi.mock('@google-cloud/cloud-sql-connector', () => ({
-  AuthTypes: { IAM: 'IAM' },
-  IpAddressTypes: { PRIVATE: 'PRIVATE' },
-  Connector: class {
-    getOptions = getOptions
-    close = connectorClose
-  },
-}))
-
 import {
   closeManagedPool,
   createManagedPool,
   createManagedPoolSync,
   getOrCreateManagedPoolSync,
   initManagedPool,
+  type IamAuth,
   type PoolEnvConfig,
 } from './index'
 
+// IAM is an injected strategy; a fake one stands in for any cloud SDK.
+const connect = vi.fn<IamAuth['connect']>(() =>
+  Promise.resolve({ options: { host: '/sock', ssl: false, user: 'sa@proj.iam' }, close: iamClose }),
+)
+const iamClose = vi.fn()
+
 const CFG: PoolEnvConfig = {
   connectionStringEnvVar: 'TEST_DATABASE_URL',
-  iamAuthEnvVar: 'TEST_USE_IAM_AUTH',
-  instanceEnvVar: 'TEST_CLOUDSQL_INSTANCE',
-  iamUserEnvVar: 'TEST_IAM_DB_USER',
   database: 'testdb',
+  iam: { enabledEnvVar: 'TEST_USE_IAM_AUTH', connect },
 }
 
 beforeEach(() => {
   poolCtor.mockClear()
   poolEnd.mockClear()
   poolOn.mockClear()
-  getOptions.mockClear()
-  connectorClose.mockClear()
+  connect.mockClear()
+  iamClose.mockClear()
   delete process.env.TEST_USE_IAM_AUTH
   process.env.TEST_DATABASE_URL = 'postgres://u:p@localhost:5432/testdb'
-  process.env.TEST_CLOUDSQL_INSTANCE = 'proj:region:inst'
-  process.env.TEST_IAM_DB_USER = 'sa@proj.iam'
 })
 
 afterEach(() => {
   delete process.env.TEST_DATABASE_URL
-  delete process.env.TEST_CLOUDSQL_INSTANCE
-  delete process.env.TEST_IAM_DB_USER
   delete process.env.TEST_USE_IAM_AUTH
 })
 
@@ -69,7 +59,7 @@ describe('createManagedPoolSync (password mode)', () => {
     expect(poolCtor).toHaveBeenCalledWith(
       expect.objectContaining({ connectionString: 'postgres://u:p@localhost:5432/testdb' }),
     )
-    expect(getOptions).not.toHaveBeenCalled()
+    expect(connect).not.toHaveBeenCalled()
   })
 
   it('passes no ssl option unless passwordModeSsl resolves one', () => {
@@ -160,7 +150,7 @@ describe('createManagedPoolSync (password mode)', () => {
     errorSpy.mockRestore()
   })
 
-  it('throws in IAM mode (the connector is async — use createManagedPool)', () => {
+  it('throws in IAM mode (IAM auth is async — use createManagedPool)', () => {
     process.env.TEST_USE_IAM_AUTH = 'true'
     expect(() => createManagedPoolSync(CFG)).toThrow(/requires async init/)
   })
@@ -175,28 +165,23 @@ describe('createManagedPool (async)', () => {
   it('password mode resolves to a connection-string pool', async () => {
     const { pool } = await createManagedPool(CFG)
     expect(pool).toBeDefined()
-    expect(getOptions).not.toHaveBeenCalled()
+    expect(connect).not.toHaveBeenCalled()
     expect(poolCtor).toHaveBeenCalledWith(
       expect.objectContaining({ connectionString: 'postgres://u:p@localhost:5432/testdb' }),
     )
   })
 
-  it('IAM mode uses the connector + the IAM user, no connection string', async () => {
+  it('IAM mode builds the pool from the strategy options, no connection string', async () => {
     process.env.TEST_USE_IAM_AUTH = 'true'
     const { close } = await createManagedPool(CFG)
-    expect(getOptions).toHaveBeenCalledWith(
-      expect.objectContaining({
-        instanceConnectionName: 'proj:region:inst',
-        authType: 'IAM',
-        ipType: 'PRIVATE',
-      }),
-    )
+    expect(connect).toHaveBeenCalledWith('testdb')
     expect(poolCtor).toHaveBeenCalledWith(
       expect.objectContaining({
+        host: '/sock',
         user: 'sa@proj.iam',
         database: 'testdb',
-        // The defensive timeouts must survive the merge with the connector's
-        // socket options — same flake guard as password mode, both pools.
+        // The defensive timeouts must survive the merge with the strategy's
+        // options — same flake guard as password mode, both pools.
         connectionTimeoutMillis: 10_000,
         idle_in_transaction_session_timeout: 15_000,
         keepAlive: true,
@@ -204,16 +189,26 @@ describe('createManagedPool (async)', () => {
     )
     const cfgArg = poolCtor.mock.calls[0]?.[0]
     expect(cfgArg).not.toHaveProperty('connectionString')
-    // close() ends the pool AND closes the connector.
+    // close() ends the pool AND tears down the auth client.
     await close()
     expect(poolEnd).toHaveBeenCalledOnce()
-    expect(connectorClose).toHaveBeenCalledOnce()
+    expect(iamClose).toHaveBeenCalledOnce()
   })
 
-  it('IAM mode throws when the instance env var is missing', async () => {
+  it('IAM mode propagates a strategy failure', async () => {
     process.env.TEST_USE_IAM_AUTH = 'true'
-    delete process.env.TEST_CLOUDSQL_INSTANCE
-    await expect(createManagedPool(CFG)).rejects.toThrow()
+    connect.mockRejectedValueOnce(new Error('Missing required env: TEST_CLOUDSQL_INSTANCE'))
+    await expect(createManagedPool(CFG)).rejects.toThrow(/TEST_CLOUDSQL_INSTANCE/)
+  })
+
+  it('stays in password mode when no IAM strategy is configured', async () => {
+    process.env.TEST_USE_IAM_AUTH = 'true'
+    const { iam: _unused, ...passwordOnly } = CFG
+    await createManagedPool(passwordOnly)
+    expect(connect).not.toHaveBeenCalled()
+    expect(poolCtor).toHaveBeenCalledWith(
+      expect.objectContaining({ connectionString: 'postgres://u:p@localhost:5432/testdb' }),
+    )
   })
 })
 
@@ -237,7 +232,7 @@ describe('managed-pool registry (globalThis singleton — signup-500 fix)', () =
     process.env.TEST_USE_IAM_AUTH = 'true'
     // Sanity: without boot init, the sync getter throws (the exact prod symptom).
     expect(() => getOrCreateManagedPoolSync(CFG)).toThrow(/requires async init/)
-    // Boot init opens the pool via the async connector and registers it.
+    // Boot init opens the pool via the async IAM strategy and registers it.
     await initManagedPool(CFG)
     // Now the sync getter — as called from a request handler, even a duplicated
     // module copy — reads the registry and never reaches the throw.

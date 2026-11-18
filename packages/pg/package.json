@@ -24,6 +24,7 @@
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.mjs",
+    "./cloud-sql": "./dist/cloud-sql.mjs",
     "./package.json": "./package.json"
   },
   "files": [

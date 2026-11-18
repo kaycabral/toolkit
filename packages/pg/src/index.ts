@@ -9,7 +9,7 @@ export { stripSslParams, SUPABASE_ROOT_CA_2021, supabaseSsl } from './supabase'
  * handling, process-wide registry, TLS) shared by every database a consumer
  * opens, so it is not re-derived per app.
  *
- * Two modes, picked by `<PREFIX>_USE_IAM_AUTH`:
+ * Two modes, picked by `iam.enabledEnvVar`:
  *
  *   - **Production (IAM, passwordless):** the Cloud SQL Node connector dials the
  *     instance's PRIVATE IP directly over the VPC (Direct VPC egress on the Cloud
@@ -19,8 +19,8 @@ export { stripSslParams, SUPABASE_ROOT_CA_2021, supabaseSsl } from './supabase'
  *     DB-level IAM user. Pool creation is async (the connector resolves socket
  *     options over the network).
  *
- *     Needs the optional peer `@google-cloud/cloud-sql-connector`, loaded only
- *     in this mode.
+ *     Opt in with `iam: cloudSqlIam(...)` from `@cbrl/pg/cloud-sql`; only that
+ *     subpath depends on `@google-cloud/cloud-sql-connector`.
  *
  *   - **Password:** a plain connection string (local docker, CI service,
  *     Supabase). Synchronous. Pass `passwordModeSsl: supabaseSsl` for Supabase.
@@ -103,28 +103,27 @@ function attachPoolErrorHandler(pool: Pool, database: string): Pool {
 }
 
 /** Inputs that vary per database; everything else is shared policy. */
+/**
+ * IAM auth strategy, injected so this module never references a cloud SDK.
+ * Build one with `cloudSqlIam()` from `@cbrl/pg/cloud-sql`.
+ */
+export type IamAuth = {
+  /** Env var that, when `'true'`, switches the pool to IAM auth. */
+  readonly enabledEnvVar: string
+  /** Resolve connection options for `database` plus a teardown for the auth client. */
+  readonly connect: (database: string) => Promise<IamConnection>
+}
+
+export type IamConnection = {
+  readonly options: PoolConfig
+  readonly close: () => void
+}
+
+/** Inputs that vary per database; everything else is shared policy. */
 export type PoolEnvConfig = {
-  /**
-   * Env var holding the connection string in password mode (local/CI), e.g.
-   * `DATABASE_URL`.
-   */
+  /** Env var holding the connection string in password mode, e.g. `DATABASE_URL`. */
   readonly connectionStringEnvVar: string
-  /**
-   * Env var that, when `'true'`, switches this pool to IAM auth. Distinct per
-   * database so one can flip independently, e.g. `APP_USE_IAM_AUTH`.
-   */
-  readonly iamAuthEnvVar: string
-  /**
-   * Env var holding the Cloud SQL connection name (`project:region:instance`)
-   * for the connector, e.g. `APP_CLOUDSQL_INSTANCE`.
-   */
-  readonly instanceEnvVar: string
-  /**
-   * Env var holding the IAM DB user (the runtime SA email WITHOUT the
-   * `.gserviceaccount.com` suffix), e.g. `APP_IAM_DB_USER`.
-   */
-  readonly iamUserEnvVar: string
-  /** Logical database name to connect to in IAM mode, e.g. `app`. */
+  /** Logical database name; also the registry key. */
   readonly database: string
   /**
    * Optional TLS policy for password mode, resolved from the connection string
@@ -134,6 +133,8 @@ export type PoolEnvConfig = {
    * `ssl*` params first (`pg` lets them override the `ssl` object).
    */
   readonly passwordModeSsl?: (connectionString: string) => PoolConfig['ssl'] | undefined
+  /** Optional passwordless auth, active when its `enabledEnvVar` is `'true'`. */
+  readonly iam?: IamAuth
 }
 
 /** A pool plus the connector that backs it (IAM mode); both must be closed. */
@@ -169,8 +170,10 @@ function registry(): PoolRegistry {
   return (g[REGISTRY] ??= new Map<string, ManagedPool>())
 }
 
-function iamEnabled(cfg: PoolEnvConfig): boolean {
-  return process.env[cfg.iamAuthEnvVar] === 'true'
+function enabledIam(cfg: PoolEnvConfig): IamAuth | undefined {
+  return cfg.iam !== undefined && process.env[cfg.iam.enabledEnvVar] === 'true'
+    ? cfg.iam
+    : undefined
 }
 
 /** Build the password-mode pool (plain connection string). Always synchronous. */
@@ -199,19 +202,13 @@ function createPasswordPool(cfg: PoolEnvConfig): ManagedPool {
  * Production (Cloud Run boot) calls this. Tests/local can use the sync variant.
  */
 export async function createManagedPool(cfg: PoolEnvConfig): Promise<ManagedPool> {
-  if (!iamEnabled(cfg)) return createPasswordPool(cfg)
+  const iam = enabledIam(cfg)
+  if (iam === undefined) return createPasswordPool(cfg)
 
-  const { AuthTypes, Connector, IpAddressTypes } = await import('@google-cloud/cloud-sql-connector')
-  const connector = new Connector()
-  const clientOpts = await connector.getOptions({
-    instanceConnectionName: requireEnv(cfg.instanceEnvVar),
-    authType: AuthTypes.IAM,
-    ipType: IpAddressTypes.PRIVATE,
-  })
+  const connection = await iam.connect(cfg.database)
   const pool = attachPoolErrorHandler(
     new Pool({
-      ...(clientOpts as PoolConfig),
-      user: requireEnv(cfg.iamUserEnvVar),
+      ...connection.options,
       database: cfg.database,
       max: POOL_MAX,
       idleTimeoutMillis: POOL_IDLE_MS,
@@ -223,7 +220,7 @@ export async function createManagedPool(cfg: PoolEnvConfig): Promise<ManagedPool
     pool,
     close: async () => {
       await pool.end()
-      connector.close()
+      connection.close()
     },
   }
 }
@@ -235,9 +232,10 @@ export async function createManagedPool(cfg: PoolEnvConfig): Promise<ManagedPool
  * synchronous domain/test call-sites keep a sync getter with no boot ceremony.
  */
 export function createManagedPoolSync(cfg: PoolEnvConfig): ManagedPool {
-  if (iamEnabled(cfg)) {
+  const iam = enabledIam(cfg)
+  if (iam !== undefined) {
     throw new Error(
-      `${cfg.iamAuthEnvVar}=true requires async init (Cloud SQL IAM connector). ` +
+      `${iam.enabledEnvVar}=true requires async init (IAM auth). ` +
         'Call createManagedPool() at boot, not the sync variant.',
     )
   }
