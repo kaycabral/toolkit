@@ -1,6 +1,6 @@
 {
   "name": "@cbrl/eslint-config",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Strict ESLint flat config for TypeScript, React and Next.js apps, with custom fail-fast rules (no eslint-disable, no env fallbacks).",
   "license": "MIT",
   "author": "Kayron Cabral",
