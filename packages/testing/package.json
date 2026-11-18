@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@cbrl/env": "workspace:^",
-    "jest-axe": "^10.0.0"
+    "jest-axe": "^11.0.0"
   },
   "peerDependencies": {
     "vitest": ">=3"
