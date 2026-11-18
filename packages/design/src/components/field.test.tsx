@@ -53,10 +53,10 @@ describe('Field', () => {
         <FieldTitle>Ativo</FieldTitle>
       </Field>,
     )
-    expect(screen.getByText('Ativo').closest('[data-slot=field]')).toHaveAttribute(
-      'data-orientation',
-      'horizontal',
-    )
+    const field = screen.getByRole('group')
+    expect(field).toHaveAttribute('data-slot', 'field')
+    expect(field).toHaveAttribute('data-orientation', 'horizontal')
+    expect(field).toHaveTextContent('Ativo')
   })
 
   describe('FieldError', () => {

@@ -72,10 +72,13 @@ describe('SidebarMenu', () => {
   it('renders the loading skeleton with an icon', () => {
     render(
       <SidebarProvider>
-        <SidebarMenuSkeleton showIcon data-testid="sk" />
+        <SidebarMenuSkeleton showIcon role="status" aria-label="Carregando menu" />
       </SidebarProvider>,
     )
-    expect(screen.getByTestId('sk')).toHaveAttribute('data-sidebar', 'menu-skeleton')
+    expect(screen.getByRole('status', { name: 'Carregando menu' })).toHaveAttribute(
+      'data-sidebar',
+      'menu-skeleton',
+    )
   })
 
   it('has no accessibility violations', async () => {

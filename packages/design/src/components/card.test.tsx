@@ -56,11 +56,11 @@ describe('Card', () => {
 
   it('reflects the sm size on data-size', () => {
     render(
-      <Card size="sm" data-testid="card">
+      <Card size="sm" role="region" aria-label="Resumo">
         <CardContent>x</CardContent>
       </Card>,
     )
-    expect(screen.getByTestId('card')).toHaveAttribute('data-size', 'sm')
+    expect(screen.getByRole('region', { name: 'Resumo' })).toHaveAttribute('data-size', 'sm')
   })
 
   it('has no accessibility violations', async () => {

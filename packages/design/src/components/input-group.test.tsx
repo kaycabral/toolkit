@@ -30,7 +30,10 @@ describe('InputGroup', () => {
         <InputGroupInput aria-label="Taxa" />
       </InputGroup>,
     )
-    expect(screen.getByText('%').closest('[data-slot=input-group-addon]')).toHaveClass('order-last')
+    // The addon renders its text directly, so the text match is the addon itself.
+    const addon = screen.getByText('%')
+    expect(addon).toHaveAttribute('data-slot', 'input-group-addon')
+    expect(addon).toHaveClass('order-last')
   })
 
   it('has no accessibility violations', async () => {

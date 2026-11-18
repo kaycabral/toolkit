@@ -6,8 +6,8 @@ import { Skeleton } from './skeleton'
 
 describe('Skeleton', () => {
   it('renders the pulse placeholder and merges className', () => {
-    render(<Skeleton data-testid="sk" className="h-4 w-20" />)
-    const el = screen.getByTestId('sk')
+    render(<Skeleton role="status" aria-label="Carregando" className="h-4 w-20" />)
+    const el = screen.getByRole('status', { name: 'Carregando' })
     expect(el).toHaveAttribute('data-slot', 'skeleton')
     expect(el).toHaveClass('animate-pulse', 'h-4', 'w-20')
   })

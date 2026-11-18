@@ -6,13 +6,16 @@ import { Separator } from './separator'
 
 describe('Separator', () => {
   it('defaults to a horizontal decorative separator', () => {
-    render(<Separator data-testid="sep" />)
-    expect(screen.getByTestId('sep')).toHaveAttribute('data-orientation', 'horizontal')
+    render(<Separator />)
+    // Decorative separators are hidden from assistive tech via role="none".
+    const separator = screen.getByRole('none')
+    expect(separator).toHaveAttribute('data-slot', 'separator')
+    expect(separator).toHaveAttribute('data-orientation', 'horizontal')
   })
 
   it('renders a vertical separator', () => {
-    render(<Separator data-testid="sep" orientation="vertical" />)
-    expect(screen.getByTestId('sep')).toHaveAttribute('data-orientation', 'vertical')
+    render(<Separator orientation="vertical" />)
+    expect(screen.getByRole('none')).toHaveAttribute('data-orientation', 'vertical')
   })
 
   it('has no accessibility violations', async () => {

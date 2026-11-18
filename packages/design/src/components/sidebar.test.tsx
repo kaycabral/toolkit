@@ -33,7 +33,7 @@ function setViewportWidth(width: number) {
 
 function StateProbe() {
   const { state } = useSidebar()
-  return <span data-testid="sidebar-state">{state}</span>
+  return <output aria-label="Sidebar state">{state}</output>
 }
 
 function Tree() {
@@ -70,22 +70,22 @@ describe('Sidebar', () => {
 
   it('starts expanded and collapses when the trigger is clicked', async () => {
     render(<Tree />)
-    expect(screen.getByTestId('sidebar-state')).toHaveTextContent('expanded')
+    expect(screen.getByRole('status', { name: 'Sidebar state' })).toHaveTextContent('expanded')
     await userEvent.click(screen.getByRole('button', { name: /toggle sidebar/i }))
-    expect(screen.getByTestId('sidebar-state')).toHaveTextContent('collapsed')
+    expect(screen.getByRole('status', { name: 'Sidebar state' })).toHaveTextContent('collapsed')
   })
 
   it('toggles via the cmd/ctrl+b keyboard shortcut', async () => {
     render(<Tree />)
-    expect(screen.getByTestId('sidebar-state')).toHaveTextContent('expanded')
+    expect(screen.getByRole('status', { name: 'Sidebar state' })).toHaveTextContent('expanded')
     await userEvent.keyboard('{Meta>}b{/Meta}')
-    expect(screen.getByTestId('sidebar-state')).toHaveTextContent('collapsed')
+    expect(screen.getByRole('status', { name: 'Sidebar state' })).toHaveTextContent('collapsed')
   })
 
   it('exposes useSidebar context to descendants', () => {
     render(<Tree />)
     // StateProbe rendered without throwing → the context is provided.
-    expect(screen.getByTestId('sidebar-state')).toBeInTheDocument()
+    expect(screen.getByRole('status', { name: 'Sidebar state' })).toBeInTheDocument()
   })
 
   it('has no accessibility violations when expanded', async () => {

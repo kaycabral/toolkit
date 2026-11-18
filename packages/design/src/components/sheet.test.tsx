@@ -38,7 +38,9 @@ describe('Sheet', () => {
 
   it('reflects the side on data-side', () => {
     render(<Drawer side="left" />)
-    expect(document.querySelector('[data-slot=sheet-content]')).toHaveAttribute('data-side', 'left')
+    const content = screen.getByRole('dialog', { name: 'Filtros' })
+    expect(content).toHaveAttribute('data-slot', 'sheet-content')
+    expect(content).toHaveAttribute('data-side', 'left')
   })
 
   it('has no accessibility violations while open', async () => {

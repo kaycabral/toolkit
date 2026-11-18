@@ -1,5 +1,5 @@
 import { expectNoA11yViolations } from '@cbrl/testing/a11y'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { ScrollArea as ScrollAreaPrimitive } from 'radix-ui'
 import type * as React from 'react'
 import { describe, expect, it } from 'vitest'
@@ -20,12 +20,16 @@ function ScrollAreaRootForTest({ children }: { children: React.ReactNode }) {
 describe('ScrollArea', () => {
   it('renders its children inside a scroll viewport', () => {
     render(
-      <ScrollArea className="h-24">
+      <ScrollArea className="h-24" role="region" aria-label="Lista">
         <p>conteúdo longo</p>
       </ScrollArea>,
     )
-    expect(screen.getByText('conteúdo longo')).toBeInTheDocument()
-    expect(document.querySelector('[data-slot="scroll-area-viewport"]')).toBeInTheDocument()
+    const region = screen.getByRole('region', { name: 'Lista' })
+    expect(region).toHaveAttribute('data-slot', 'scroll-area')
+    expect(within(region).getByText('conteúdo longo')).toBeInTheDocument()
+    // The viewport is an internal Radix node with no ARIA role; assert it is
+    // mounted inside the root through its serialized markup.
+    expect(region).toContainHTML('data-slot="scroll-area-viewport"')
   })
 
   it('exposes a horizontal scrollbar variant within a scroll area', () => {
@@ -34,11 +38,12 @@ describe('ScrollArea', () => {
     // jsdom keeps the bar mounted.
     render(
       <ScrollAreaRootForTest>
-        <ScrollBar orientation="horizontal" data-testid="bar" />
+        <ScrollBar orientation="horizontal" role="group" aria-label="Rolagem horizontal" />
       </ScrollAreaRootForTest>,
     )
-    expect(screen.getByTestId('bar')).toHaveAttribute('data-slot', 'scroll-area-scrollbar')
-    expect(screen.getByTestId('bar')).toHaveAttribute('data-orientation', 'horizontal')
+    const bar = screen.getByRole('group', { name: 'Rolagem horizontal' })
+    expect(bar).toHaveAttribute('data-slot', 'scroll-area-scrollbar')
+    expect(bar).toHaveAttribute('data-orientation', 'horizontal')
   })
 
   it('has no accessibility violations', async () => {

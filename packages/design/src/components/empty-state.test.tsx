@@ -19,13 +19,13 @@ describe('EmptyState', () => {
       <EmptyState
         title="Nenhum serviço"
         description="Cadastre seu primeiro serviço para começar a agendar."
-        icon={<svg data-testid="icon" />}
+        icon={<svg role="img" aria-label="Ícone de serviço" />}
       />,
     )
     expect(
       screen.getByText('Cadastre seu primeiro serviço para começar a agendar.'),
     ).toBeInTheDocument()
-    expect(screen.getByTestId('icon')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Ícone de serviço' })).toBeInTheDocument()
   })
 
   it('renders a link CTA when action.href is set', () => {
@@ -64,7 +64,7 @@ describe('EmptyState', () => {
       <EmptyState
         title="Nenhum serviço"
         description="Cadastre seu primeiro serviço para começar a agendar."
-        icon={<svg data-testid="icon" aria-hidden="true" />}
+        icon={<svg aria-hidden="true" />}
         action={{ label: 'Criar serviço', href: '/services/new' }}
       />,
     )
