@@ -1,7 +1,7 @@
 {
   "name": "@cbrl/pg",
   "version": "0.2.0",
-  "description": "Hardened node-postgres pool factory: bounded timeouts, idle-error handler, process-wide registry, Supabase CA pinning and optional Cloud SQL IAM auth.",
+  "description": "Hardened node-postgres pool factory (bounded timeouts, idle-error handler, process-wide registry, Supabase CA pinning), Postgres error helpers and an optional Drizzle integration.",
   "license": "MIT",
   "author": "Kayron Cabral",
   "homepage": "https://github.com/kaycabral/toolkit/tree/main/packages/pg#readme",
@@ -18,13 +18,13 @@
     "pg",
     "pool",
     "supabase",
-    "cloud-sql"
+    "drizzle"
   ],
   "type": "module",
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.mjs",
-    "./cloud-sql": "./dist/cloud-sql.mjs",
+    "./drizzle": "./dist/drizzle.mjs",
     "./package.json": "./package.json"
   },
   "files": [
@@ -42,11 +42,11 @@
     "@types/pg": "^8.20.0"
   },
   "peerDependencies": {
-    "@google-cloud/cloud-sql-connector": "^1.11.1",
+    "drizzle-orm": ">=0.44.0 <1",
     "pg": "^8.13.0"
   },
   "peerDependenciesMeta": {
-    "@google-cloud/cloud-sql-connector": {
+    "drizzle-orm": {
       "optional": true
     }
   },
@@ -55,10 +55,10 @@
     "@cbrl/eslint-config": "workspace:*",
     "@cbrl/testing": "workspace:*",
     "@cbrl/tsconfig": "workspace:*",
-    "@google-cloud/cloud-sql-connector": "^1.11.1",
     "@types/node": "catalog:",
     "@types/pg": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "drizzle-orm": "catalog:",
     "eslint": "catalog:",
     "pg": "catalog:",
     "publint": "catalog:",

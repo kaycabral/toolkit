@@ -34,7 +34,7 @@ o/bKiIz+Fq8=
 /**
  * TLS policy for a Supabase connection string: verify Supabase hosts against the
  * pinned root CA; leave anything else (local docker, CI service) to the URL.
- * Plug it in as `PoolEnvConfig.passwordModeSsl`.
+ * Plug it in as `PoolEnvConfig.ssl`.
  */
 export function supabaseSsl(connectionString: string): { ca: string } | undefined {
   const { hostname } = new URL(connectionString)
