@@ -1,6 +1,6 @@
 {
   "name": "@cbrl/supabase",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Supabase Auth wiring for Next.js 16: public config, browser/server clients, proxy session refresh, OAuth callback and test sign-in routes, a Google sign-in hook and local-stack helpers.",
   "license": "MIT",
   "author": "Kayron Cabral",
