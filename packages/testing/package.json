@@ -1,6 +1,6 @@
 {
   "name": "@cbrl/testing",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Test helpers: Vitest coverage base, server-only shim, jsdom polyfills, jest-axe a11y matcher, and Playwright E2E/smoke presets.",
   "license": "MIT",
   "author": "Kayron Cabral",

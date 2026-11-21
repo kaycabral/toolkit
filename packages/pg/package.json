@@ -1,6 +1,6 @@
 {
   "name": "@cbrl/pg",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Hardened node-postgres pool factory (bounded timeouts, idle-error handler, process-wide registry, Supabase CA pinning), Postgres error helpers and an optional Drizzle integration.",
   "license": "MIT",
   "author": "Kayron Cabral",
