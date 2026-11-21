@@ -2,7 +2,7 @@
 // a machine-checked dependency graph instead of a prose convention. Two walls:
 //
 //   1. PURITY — `features/*/core/**` is the functional core: pure rules, view
-//      models, parsing. It MUST NOT reach for React, Next, Firestore, or any
+//      models, parsing. It MUST NOT reach for React, Next, a database client, or any
 //      I/O. The whole point is that core is unit-testable with zero harness, so
 //      coverage + mutation have teeth. Enforced with stock `no-restricted-imports`
 //      (zero false positives — purity is literally "doesn't import these").
@@ -44,16 +44,22 @@ export const layering = [
             },
             {
               group: [
-                'firebase',
-                'firebase/*',
-                'firebase-admin',
-                'firebase-admin/*',
+                'pg',
+                'pg/*',
+                'drizzle-orm',
+                'drizzle-orm/*',
+                '@supabase/*',
+                'stripe',
+                '@cbrl/pg',
+                '@cbrl/pg/*',
+                '@cbrl/supabase',
+                '@cbrl/supabase/*',
                 '@/shared/db',
                 '@/shared/db/*',
                 'server-only',
               ],
               message:
-                'core/ is pure: no Firestore/admin/server-only. Data access lives in adapters/ (e.g. *.repo.ts).',
+                'core/ is pure: no database, auth or payment client, no server-only. Data access lives in adapters/ (e.g. *.repo.ts).',
             },
             {
               group: ['**/adapters/*', '**/ui/*', '@/features/*/adapters/*', '@/features/*/ui/*'],
@@ -87,15 +93,21 @@ export const layering = [
             },
             {
               group: [
-                'firebase',
-                'firebase/*',
-                'firebase-admin',
-                'firebase-admin/*',
+                'pg',
+                'pg/*',
+                'drizzle-orm',
+                'drizzle-orm/*',
+                '@supabase/*',
+                'stripe',
+                '@cbrl/pg',
+                '@cbrl/pg/*',
+                '@cbrl/supabase',
+                '@cbrl/supabase/*',
                 '@/shared/db',
                 '@/shared/db/*',
                 'server-only',
               ],
-              message: 'domain/ is pure: no Firestore/admin/server-only.',
+              message: 'domain/ is pure: no database, auth or payment client, no server-only.',
             },
             {
               group: ['@/shared/*', '@/features/*', '@/app/*'],

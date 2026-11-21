@@ -15,10 +15,10 @@ test('no-env-value-fallback', () => {
       // Fail-fast helper — the sanctioned pattern.
       'const x = process.env.APP_URL; if (!x) throw new Error("APP_URL")',
       // Boolean logic, not a value default.
-      'if (process.env.FIRESTORE_EMULATOR_HOST || process.env.FIREBASE_AUTH_EMULATOR_HOST) {}',
+      'if (process.env.CI || process.env.VERCEL) {}',
       'const on = !!process.env.A || !!process.env.B',
       // env→env chain with no literal (ends in throw downstream).
-      'const p = process.env.FIREBASE_ADMIN_PROJECT_ID ?? process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+      'const u = process.env.POSTGRES_URL_NON_POOLING ?? process.env.POSTGRES_URL',
       // Absence normalization — not a fake value.
       'const id = process.env.GITHUB_APP_ID ?? null',
       'const id = process.env.GITHUB_APP_ID ?? undefined',
@@ -51,8 +51,8 @@ test('no-env-value-fallback', () => {
         errors: [{ messageId: 'envFallback', data: { varName: 'COMMIT_SHA' } }],
       },
       {
-        code: 'process.env.FIRESTORE_EMULATOR_HOST ??= "127.0.0.1:8080"',
-        errors: [{ messageId: 'envFallback', data: { varName: 'FIRESTORE_EMULATOR_HOST' } }],
+        code: 'process.env.POSTGRES_URL ??= "postgres://localhost:5432/app"',
+        errors: [{ messageId: 'envFallback', data: { varName: 'POSTGRES_URL' } }],
       },
       {
         code: 'process.env.HOST ||= "127.0.0.1"',

@@ -12,7 +12,7 @@ import { readEnvFlag, requireEnv, requireEnvNumber, requireEnvOneOf } from '@cbr
 
 const databaseUrl = requireEnv('DATABASE_URL') // throws if unset or empty
 const port = requireEnvNumber('PORT') // throws unless a finite number > 0
-const projectId = requireEnvOneOf('GCLOUD_PROJECT', 'FIREBASE_PROJECT_ID')
+const migrationUrl = requireEnvOneOf('POSTGRES_URL_NON_POOLING', 'POSTGRES_URL')
 const billingEnabled = readEnvFlag('BILLING_ENABLED') // true only for 'true' or '1'
 ```
 

@@ -19,8 +19,8 @@ export function requireEnv(name: string): string {
 
 /**
  * Read the first of `names` that is set and non-empty. Throws listing all of
- * them if none is — for config that several env vars can supply (e.g. a project
- * id from `FIREBASE_ADMIN_PROJECT_ID` / `GCLOUD_PROJECT` / …). The chain of
+ * them if none is — for config that several env vars can supply (e.g. a
+ * database URL from `POSTGRES_URL_NON_POOLING` / `POSTGRES_URL`). The chain of
  * `process.env.A ?? process.env.B` is allowed by `no-env-value-fallback`; this
  * just centralises the "none set → fail loud" tail.
  */
