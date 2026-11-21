@@ -30,3 +30,4 @@ catalog:
   '@types/jest-axe': ^3.5.9
   '@types/pg': ^8.20.0
   pg: ^8.22.0
+  drizzle-orm: ~0.45.4
