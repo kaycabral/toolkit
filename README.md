@@ -12,6 +12,7 @@ presets, runtime utilities and a design system, published to npm under `@cbrl/*`
 | [`@cbrl/env`](packages/env)                             | Fail-fast environment variable readers                                                      |
 | [`@cbrl/log`](packages/log)                             | PII-safe structured logger + per-request correlation context                                |
 | [`@cbrl/pg`](packages/pg)                               | Hardened `pg` pool: timeouts, idle-error handler, Supabase CA pin, error helpers, Drizzle   |
+| [`@cbrl/supabase`](packages/supabase)                   | Supabase Auth for Next.js 16: clients, proxy refresh, callback/test routes, local stack     |
 | [`@cbrl/next`](packages/next)                           | Next.js 16: security headers with a reporting CSP, health and CSP-report routes, `safeNext` |
 | [`@cbrl/testing`](packages/testing)                     | Vitest coverage base, `server-only` shim, axe matcher                                       |
 | [`@cbrl/design`](packages/design)                       | Radix + Tailwind v4 design system with overridable tokens                                   |

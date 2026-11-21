@@ -1,0 +1,4 @@
+{
+  "extends": "@cbrl/tsconfig/react-library.json",
+  "include": ["src/**/*.ts", "src/**/*.tsx", "*.config.ts"]
+}
