@@ -1,5 +1,11 @@
 # @cbrl/supabase
 
+## 0.1.1
+
+### Patch Changes
+
+- [#32](https://github.com/kaycabral/toolkit/pull/32) [`8e03526`](https://github.com/kaycabral/toolkit/commit/8e035260203930872be672d9c04a5eca07d3b5c0) Thanks [@kaycabral](https://github.com/kaycabral)! - Import `next/server.js` and `next/headers.js` with their file extension. `next` ships no `exports` map, so plain Node ESM (for example Vitest running the app's tests) could not resolve the bare `next/server` / `next/headers` specifiers inside these packages, and consumers had to inline `@cbrl/*` through `server.deps.inline`. That workaround is no longer needed.
+
 ## 0.1.0
 
 ### Minor Changes
