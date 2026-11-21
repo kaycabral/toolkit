@@ -2,8 +2,8 @@
 //
 // The real `server-only` throws at import time when loaded outside a server
 // boundary — and under vitest the environment is jsdom, which looks like the
-// client to it. That would make every server module (admin SDK, Firestore
-// readers, PII helpers) unimportable in unit tests. Apps alias the bare
+// client to it. That would make every server module (database
+// readers, auth helpers, PII helpers) unimportable in unit tests. Apps alias the bare
 // `server-only` specifier to this file in their vitest config:
 //
 //   import { fileURLToPath } from 'node:url'
