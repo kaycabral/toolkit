@@ -1,0 +1,87 @@
+# Dependabot template for apps that consume @cbrl/*. Copy to the app's
+# .github/dependabot.yml unchanged: patterns that match no dependency are inert,
+# so the `critical` list can stay shared across apps.
+version: 2
+updates:
+  # pnpm workspace: run from the root only. The root job reads
+  # pnpm-workspace.yaml and updates every workspace package.json (and the
+  # catalog) together with pnpm-lock.yaml; per-workspace directories never see
+  # the root lockfile, so their PRs fail `pnpm install --frozen-lockfile`.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 10
+    # Supply-chain quarantine: a compromised release is usually yanked within
+    # hours; never propose a version younger than this. Security updates skip it.
+    cooldown:
+      default-days: 3
+      semver-major-days: 7
+      exclude:
+        - '@cbrl/*'
+    commit-message:
+      prefix: chore
+      include: scope
+    # Groups drive auto-merge (dependabot-auto-merge.yml): `minor-and-patch` and
+    # the `actions` group below merge by themselves. `critical` holds what CI can't fully prove (payments, auth,
+    # database, framework, error reporting) and waits for a human, as do
+    # `cbrl-toolkit`, majors and security updates (ungrouped).
+    groups:
+      cbrl-toolkit:
+        patterns:
+          - '@cbrl/*'
+      critical:
+        update-types:
+          - minor
+          - patch
+        patterns:
+          - next
+          - stripe
+          - '@supabase/*'
+          - supabase
+          - drizzle-orm
+          - drizzle-kit
+          - pg
+          - '@sentry/*'
+          - effect
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+        exclude-patterns:
+          - '@cbrl/*'
+          - next
+          - stripe
+          - '@supabase/*'
+          - supabase
+          - drizzle-orm
+          - drizzle-kit
+          - pg
+          - '@sentry/*'
+          - effect
+
+  # `/` only covers .github/workflows; composite actions live under
+  # .github/actions and must be listed or their pins silently drift.
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - /.github/actions/*
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/Sao_Paulo
+    cooldown:
+      default-days: 3
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        update-types:
+          - minor
+          - patch
+        patterns:
+          - '*'
