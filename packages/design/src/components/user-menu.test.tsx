@@ -7,13 +7,10 @@ import { DropdownMenuItem } from './dropdown-menu'
 import { UserMenu, userMenuInitials } from './user-menu'
 
 describe('userMenuInitials', () => {
-  it('derives up to two letters from name, then secondary, then "?"', () => {
+  it('is an alias of initials', () => {
     expect(userMenuInitials('Ada Lovelace', null)).toBe('AL')
-    expect(userMenuInitials('Ada', null)).toBe('A')
-    expect(userMenuInitials(null, 'ada.lovelace@example.com')).toBe('AL')
+    expect(userMenuInitials(null, 'ada@example.com')).toBe('AD')
     expect(userMenuInitials(null, null)).toBe('?')
-    // Non-empty but only separators → no usable letters → "?".
-    expect(userMenuInitials('...', null)).toBe('?')
   })
 })
 

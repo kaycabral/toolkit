@@ -1,0 +1,79 @@
+{
+  "name": "@cbrl/supabase",
+  "version": "0.0.0",
+  "description": "Supabase Auth wiring for Next.js 16: public config, browser/server clients, proxy session refresh, OAuth callback and test sign-in routes, a Google sign-in hook and local-stack helpers.",
+  "license": "MIT",
+  "author": "Kayron Cabral",
+  "homepage": "https://github.com/kaycabral/toolkit/tree/main/packages/supabase#readme",
+  "bugs": {
+    "url": "https://github.com/kaycabral/toolkit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaycabral/toolkit.git",
+    "directory": "packages/supabase"
+  },
+  "keywords": [
+    "supabase",
+    "auth",
+    "nextjs",
+    "ssr",
+    "oauth"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./client": "./dist/client.mjs",
+    "./local": "./dist/local.mjs",
+    "./proxy": "./dist/proxy.mjs",
+    "./react": "./dist/react.mjs",
+    "./routes": "./dist/routes.mjs",
+    "./server": "./dist/server.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --coverage",
+    "check:package": "node scripts/check-client-directive.mjs && node ../../scripts/check-package.mjs --types",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "server-only": "^0.0.1"
+  },
+  "peerDependencies": {
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.119.0",
+    "next": "^16.0.0",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "catalog:",
+    "@cbrl/eslint-config": "workspace:*",
+    "@cbrl/testing": "workspace:*",
+    "@cbrl/tsconfig": "workspace:*",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.1",
+    "@testing-library/react": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "jsdom": "catalog:",
+    "next": "^16.4.6",
+    "publint": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

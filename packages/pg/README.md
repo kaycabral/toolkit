@@ -10,53 +10,120 @@ A `pg` pool factory with production defaults, so each app does not rediscover th
   bundler duplicates the module across chunks (Next.js instrumentation vs routes).
 - **Supabase TLS**: verify-full against the pinned Supabase root CA, with the
   URL's `ssl*` params stripped so they cannot override it.
-- **Cloud SQL IAM** (optional): passwordless auth via `@cbrl/pg/cloud-sql`. Only
-  that subpath depends on `@google-cloud/cloud-sql-connector`, so password-only
-  apps never bundle or install it.
+- **Postgres error helpers**: find the SQLSTATE behind wrapped errors.
+- **Drizzle** (optional): `@cbrl/pg/drizzle` wires a schema, migrations and
+  `drizzle-kit` credentials on top of the pool. Only that subpath imports
+  `drizzle-orm`.
 
 ```sh
 pnpm add @cbrl/pg pg
 ```
 
 ```ts
-import { getOrCreateManagedPoolSync, supabaseSsl, type PoolEnvConfig } from '@cbrl/pg'
+import { getOrCreateManagedPool, supabaseSsl, type PoolEnvConfig } from '@cbrl/pg'
 
 const config: PoolEnvConfig = {
   connectionStringEnvVar: 'DATABASE_URL',
   database: 'app',
-  passwordModeSsl: supabaseSsl,
+  ssl: supabaseSsl,
 }
 
-export const db = () => getOrCreateManagedPoolSync(config).pool
+export const pool = () => getOrCreateManagedPool(config).pool
 ```
 
-## Cloud SQL IAM
+Other pool exports: `createManagedPool` (unregistered pool), `closeManagedPool`,
+`stripSslParams` and `SUPABASE_ROOT_CA_2021`.
+
+## Drizzle
 
 ```sh
-pnpm add @google-cloud/cloud-sql-connector
+pnpm add drizzle-orm
 ```
 
 ```ts
-import { initManagedPool, type PoolEnvConfig } from '@cbrl/pg'
-import { cloudSqlIam } from '@cbrl/pg/cloud-sql'
+// src/db.ts
+import { supabaseSsl } from '@cbrl/pg'
+import { createDrizzleDatabase } from '@cbrl/pg/drizzle'
+import * as schema from './schema'
 
-const config: PoolEnvConfig = {
-  connectionStringEnvVar: 'DATABASE_URL', // still used locally and in CI
+export const appDb = createDrizzleDatabase({
+  connectionStringEnvVar: 'POSTGRES_URL',
   database: 'app',
-  iam: cloudSqlIam({
-    enabledEnvVar: 'DATABASE_USE_IAM_AUTH', // 'true' in production
-    instanceEnvVar: 'CLOUDSQL_INSTANCE',
-    userEnvVar: 'IAM_DB_USER',
-  }),
-}
+  ssl: supabaseSsl,
+  schema,
+  migrationsFolder: new URL('../drizzle', import.meta.url),
+  // migrationsTable: '__drizzle_migrations_app', // when several journals share a database
+})
 
-// Next.js instrumentation.ts: IAM pools open asynchronously at boot.
-export async function register() {
-  await initManagedPool(config)
-}
+appDb.db() // NodePgDatabase<typeof schema>, cached per pool
+appDb.pool() // the registered pg Pool, for raw SQL and transactions
+await appDb.ping() // select 1
+await appDb.close()
 ```
 
-After `initManagedPool`, `getOrCreateManagedPoolSync(config)` returns the boot
-pool. Other exports: `createManagedPool`, `createManagedPoolSync`,
-`closeManagedPool`, `stripSslParams`, `SUPABASE_ROOT_CA_2021`, and the `IamAuth`
-type for other providers.
+Nothing is opened until the first call, so the factory is safe at module scope.
+Call `appDb.pool()` at boot to fail fast on a missing connection string.
+
+`migrate()` applies pending migrations on the registered pool. Transaction
+poolers do not support the migrator's advisory lock, so a migration script
+usually passes the session/direct URL, which runs on a dedicated pool (same TLS
+policy) closed afterwards:
+
+```ts
+// scripts/migrate.ts
+import { requireEnvOneOf } from '@cbrl/env'
+import { appDb } from '../src/db'
+
+await appDb.migrate({
+  connectionString: requireEnvOneOf('POSTGRES_URL_NON_POOLING', 'POSTGRES_URL'),
+})
+```
+
+Never migrate at app boot: with N instances the advisory lock races.
+
+`drizzleKitCredentials` builds `dbCredentials` from the first env var that is
+set, with the Supabase CA pinned:
+
+```ts
+// drizzle.config.ts
+import { drizzleKitCredentials } from '@cbrl/pg/drizzle'
+import { defineConfig } from 'drizzle-kit'
+
+export default defineConfig({
+  dialect: 'postgresql',
+  schema: './src/schema.ts',
+  out: './drizzle',
+  dbCredentials: drizzleKitCredentials('POSTGRES_URL_NON_POOLING', 'POSTGRES_URL'),
+})
+```
+
+## Errors
+
+```ts
+import { isForeignKeyViolation, isUniqueViolation, PG_ERROR, pgErrorOf } from '@cbrl/pg'
+
+try {
+  await insertUser(input)
+} catch (err) {
+  if (isUniqueViolation(err, 'users_email_key')) return { error: 'email_taken' }
+  if (isForeignKeyViolation(err)) return { error: 'missing_reference' }
+  throw err
+}
+
+pgErrorOf(err) // { code?: '23505', constraint?: 'users_email_key' }
+```
+
+`pgErrorOf` walks `.cause` chains (Drizzle wraps the `pg` error) with cycle
+protection and only accepts five-character SQLSTATE codes. `PG_ERROR` names the
+integrity-constraint codes: `NOT_NULL_VIOLATION`, `FOREIGN_KEY_VIOLATION`,
+`UNIQUE_VIOLATION`, `CHECK_VIOLATION` and `EXCLUSION_VIOLATION`.
+
+Runtimes that park the original error somewhere else (e.g. a fiber failure
+under a symbol) plug in an `unwrap` hook; return `undefined` to follow `.cause`:
+
+```ts
+const unwrap = (value: object) => extractParkedError(value) // unknown | undefined
+
+pgErrorOf(err, { unwrap })
+isUniqueViolation(err, undefined, { unwrap })
+```

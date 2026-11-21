@@ -1,7 +1,7 @@
 {
   "name": "@cbrl/testing",
   "version": "0.1.0",
-  "description": "Vitest helpers: shared v8 coverage base, server-only shim, jest-axe a11y matcher and a Firebase emulator env helper.",
+  "description": "Test helpers: Vitest coverage base, server-only shim, jsdom polyfills, jest-axe a11y matcher, and Playwright E2E/smoke presets.",
   "license": "MIT",
   "author": "Kayron Cabral",
   "homepage": "https://github.com/kaycabral/toolkit/tree/main/packages/testing#readme",
@@ -15,6 +15,7 @@
   },
   "keywords": [
     "vitest",
+    "playwright",
     "testing",
     "coverage",
     "a11y",
@@ -24,8 +25,9 @@
   "sideEffects": false,
   "exports": {
     "./a11y": "./dist/a11y.mjs",
-    "./firebase": "./dist/firebase.mjs",
+    "./playwright": "./dist/playwright.mjs",
     "./vitest": "./dist/vitest.mjs",
+    "./vitest/jsdom": "./dist/vitest/jsdom.mjs",
     "./vitest/server-only-shim": "./dist/vitest/server-only-shim.mjs",
     "./package.json": "./package.json"
   },
@@ -44,16 +46,19 @@
     "jest-axe": "^10.0.0"
   },
   "peerDependencies": {
+    "@playwright/test": ">=1.50",
     "vitest": ">=3"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "catalog:",
     "@cbrl/eslint-config": "workspace:*",
     "@cbrl/tsconfig": "workspace:*",
+    "@playwright/test": "^1.56.1",
     "@types/jest-axe": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
+    "jsdom": "catalog:",
     "publint": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
@@ -61,5 +66,13 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "peerDependenciesMeta": {
+    "@playwright/test": {
+      "optional": true
+    },
+    "vitest": {
+      "optional": true
+    }
   }
 }
