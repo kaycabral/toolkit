@@ -1,39 +1,51 @@
 version: 2
 updates:
+  # pnpm workspace: run from the root only. The root job reads
+  # pnpm-workspace.yaml and updates every workspace package.json (and the
+  # catalog) together with pnpm-lock.yaml; per-workspace directories never see
+  # the root lockfile, so their PRs fail `pnpm install --frozen-lockfile`.
   - package-ecosystem: npm
-    directories:
-      - /
-      - /packages/*
-    schedule:
-      interval: weekly
-      day: monday
-      time: '06:00'
-      timezone: America/Sao_Paulo
-    open-pull-requests-limit: 10
-    commit-message:
-      prefix: chore
-      include: scope
-    groups:
-      cbrl-toolkit:
-        patterns:
-          - '@cbrl/*'
-      minor-and-patch:
-        update-types:
-          - minor
-          - patch
-        exclude-patterns:
-          - '@cbrl/*'
-
-  - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
       day: monday
       time: '06:00'
       timezone: America/Sao_Paulo
+    open-pull-requests-limit: 10
+    # Supply-chain quarantine: never propose a version younger than this (a
+    # compromised release is usually yanked within hours). Security updates
+    # skip it. Mirrors `minimumReleaseAge` in pnpm-workspace.yaml.
+    cooldown:
+      default-days: 3
+      semver-major-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # `/` only covers .github/workflows; composite actions live under
+  # .github/actions and must be listed or their pins silently drift.
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - /.github/actions/*
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/Sao_Paulo
+    cooldown:
+      default-days: 3
     commit-message:
       prefix: ci
     groups:
       actions:
+        update-types:
+          - minor
+          - patch
         patterns:
           - '*'

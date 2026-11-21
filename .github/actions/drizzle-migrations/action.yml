@@ -1,0 +1,62 @@
+name: Drizzle migration hygiene
+description: Fail when a migration journal is inconsistent, when a Drizzle schema changed without its generated migration, or (on pull requests) when a migration already on the base branch was edited, renamed or deleted.
+
+# Production has applied every migration on the base branch: fix forward with a
+# new migration, never edit an applied one.
+#
+# Requirements on the caller:
+#   - checkout with `fetch-depth: 0` (the immutability check diffs against the base)
+#   - run `setup` first
+#   - set the env var drizzle.config.ts requires (check/generate never connect,
+#     any syntactically valid URL works)
+
+inputs:
+  folders:
+    description: Space-separated migration folders (each holds the drizzle.config.ts output, e.g. `drizzle` or `apps/web/drizzle`).
+    required: true
+  check:
+    description: Command that runs `drizzle-kit check` for every journal.
+    required: true
+  generate:
+    description: Command that runs `drizzle-kit generate` for every schema.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Migration journals are consistent
+      shell: bash
+      env:
+        CHECK: ${{ inputs.check }}
+      run: eval "$CHECK"
+    - name: Schema changes ship with their migration
+      shell: bash
+      env:
+        GENERATE: ${{ inputs.generate }}
+        FOLDERS: ${{ inputs.folders }}
+      run: |
+        eval "$GENERATE"
+        read -ra folders <<<"$FOLDERS"
+        if [ -n "$(git status --porcelain -- "${folders[@]}")" ]; then
+          git status --porcelain -- "${folders[@]}"
+          echo "::error::A Drizzle schema changed without its migration. Run drizzle-kit generate and commit the migration folder."
+          exit 1
+        fi
+    - name: Migrations on the base branch are immutable
+      if: github.event_name == 'pull_request'
+      shell: bash
+      env:
+        BASE_REF: ${{ github.base_ref }}
+        FOLDERS: ${{ inputs.folders }}
+      run: |
+        read -ra folders <<<"$FOLDERS"
+        paths=()
+        for folder in "${folders[@]}"; do
+          paths+=("$folder/*.sql" "$folder/meta/*_snapshot.json")
+        done
+        edited=$(git diff --name-only --diff-filter=MDR "origin/${BASE_REF}...HEAD" -- "${paths[@]}")
+        if [ -n "$edited" ]; then
+          echo "$edited"
+          echo "::error::Migrations already on ${BASE_REF} were edited, renamed or deleted. Add a new migration instead."
+          exit 1
+        fi
