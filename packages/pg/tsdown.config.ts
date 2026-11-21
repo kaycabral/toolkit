@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  entry: { index: 'src/index.ts', 'cloud-sql': 'src/cloud-sql.ts' },
+  entry: { index: 'src/index.ts', drizzle: 'src/drizzle.ts' },
   platform: 'node',
   dts: true,
   exports: true,
