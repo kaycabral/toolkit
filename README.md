@@ -16,12 +16,27 @@ presets, runtime utilities and a design system, published to npm under `@cbrl/*`
 
 Also in this repo:
 
-- **Reusable CI**: [`.github/workflows/node-ci.yml`](.github/workflows/node-ci.yml), consumed with
-  `uses: kaycabral/toolkit/.github/workflows/node-ci.yml@<sha>`.
-- **Dependency updates**: each consumer runs Dependabot with a `cbrl-toolkit`
-  group, so a toolkit release lands as one PR per app. Copy
-  [`.github/dependabot.yml`](.github/dependabot.yml) and add the app's workspace
-  directories.
+- **CI building blocks**, always consumed pinned to a commit SHA
+  (`kaycabral/toolkit/<path>@<sha>`, kept current by Dependabot's
+  `github-actions` updates):
+
+  | Path                                                                                         | What it does                                                                               |
+  | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+  | [`.github/actions/setup`](.github/actions/setup/action.yml)                                  | pnpm + Node from `packageManager`/`.nvmrc`, store cache, frozen install                    |
+  | [`.github/actions/playwright`](.github/actions/playwright/action.yml)                        | Chromium + its system packages, both cached (offline `.deb` install on a hit)              |
+  | [`.github/actions/drizzle-migrations`](.github/actions/drizzle-migrations/action.yml)        | Journal consistency, schema change without migration, applied migrations are immutable     |
+  | [`.github/workflows/provenance.yml`](.github/workflows/provenance.yml)                       | On main: was this exact tree proven by a merged PR? Skips re-running checks when it was    |
+  | [`.github/workflows/dependabot-auto-merge.yml`](.github/workflows/dependabot-auto-merge.yml) | Merges trusted Dependabot groups after the PR gate is green, then starts the main workflow |
+
+  Each app keeps only its own composition: a `checks.yml` (which suites run), a
+  `pull-request.yml` with the `CI passed` gate, a `main.yml` with its migration
+  command, and `scorecard.yml` (the Scorecard action must live in the repo it
+  scores).
+
+- **Dependency updates**: copy [`templates/dependabot.yml`](templates/dependabot.yml)
+  to the app unchanged. It runs from the workspace root only (per-workspace
+  directories never see the root lockfile), quarantines new releases for 3 days,
+  and groups `@cbrl/*` so a toolkit release lands as one PR per app.
 
 ## Development
 

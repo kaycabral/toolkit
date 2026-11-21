@@ -1,6 +1,11 @@
 packages:
   - packages/*
 
+# Supply-chain quarantine (minutes): resolution never picks a version published
+# less than 3 days ago, the window in which compromised releases get yanked.
+# Same rule as Dependabot's cooldown.
+minimumReleaseAge: 4320
+
 # Versions used to develop and test the toolkit itself. Runtime deps that
 # consumers install are declared with explicit ranges in each package.json.
 catalog:
