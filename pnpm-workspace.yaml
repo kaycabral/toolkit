@@ -9,7 +9,7 @@ minimumReleaseAge: 4320
 # Versions used to develop and test the toolkit itself. Runtime deps that
 # consumers install are declared with explicit ranges in each package.json.
 catalog:
-  typescript: ^5.9.3
+  typescript: ^7.0.2
   '@types/node': ^25.6.2
   '@types/react': ^19.2.14
   '@types/react-dom': ^19.2.3
