@@ -25,9 +25,19 @@ this package.
 }
 ```
 
-Mount `next-themes`' `ThemeProvider` and `<Toaster />` in the root layout if you
-use dark mode or toasts. `next-themes` is a peer dependency so the app and the
-toaster share one theme state.
+Mount `ThemeProvider` (a client wrapper over `next-themes`, same props) and
+`<Toaster />` in the root layout if you use dark mode or toasts. `next-themes`
+is a peer dependency so the app and the toaster share one theme state.
+
+```tsx
+// src/app/layout.tsx
+import { ThemeProvider, Toaster } from '@cbrl/design'
+
+;<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+  {children}
+  <Toaster />
+</ThemeProvider>
+```
 
 ## Usage
 
@@ -37,6 +47,20 @@ import { Button, Input, Label } from '@cbrl/design'
 
 Every client component ships with its `'use client'` directive, so the package
 works from Server Components; the barrel itself is server-safe.
+
+### Icons and helpers
+
+`WhatsappIcon` (`currentColor`) and `GoogleIcon` (multicolor "G") are
+decorative by default; pass `title` to give them an accessible name. Size them
+with a class (`className="size-4"`).
+
+`initials(primary, fallback?)` derives avatar-fallback initials: the first
+letters of the first two words, or the first two characters of a single word,
+or `'?'`.
+
+```tsx
+<AvatarFallback>{initials(user.name, user.email)}</AvatarFallback>
+```
 
 ### App shell
 
