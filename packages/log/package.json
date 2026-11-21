@@ -1,6 +1,6 @@
 {
   "name": "@cbrl/log",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "PII-safe structured logger (JSON lines with Cloud Logging severity) and per-request correlation context on AsyncLocalStorage.",
   "license": "MIT",
   "author": "Kayron Cabral",
