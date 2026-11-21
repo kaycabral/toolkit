@@ -1,0 +1,74 @@
+name: Playwright browsers
+description: Install the Playwright Chromium build and its system packages, both cached. Run after `setup`, from the directory where `@playwright/test` is installed.
+
+# Browsers are cached per Playwright version. The browser's system packages are
+# cached as .deb files: `install-deps` goes through apt and the Ubuntu mirrors on
+# every job (it once took 6 minutes on a slow mirror). That cache is keyed by OS
+# release + Playwright version, not by runner image version: images roll out
+# gradually, so parallel jobs land on different versions and a per-version key
+# would miss. A hit installs the packages offline.
+
+inputs:
+  working-directory:
+    description: Directory where `pnpm exec playwright` resolves (the app root).
+    required: false
+    default: .
+
+outputs:
+  version:
+    description: The resolved Playwright version.
+    value: ${{ steps.resolve.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - id: resolve
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+        echo "os=${ImageOS}" >> "$GITHUB_OUTPUT"
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      id: browsers
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ steps.resolve.outputs.version }}
+    - if: steps.browsers.outputs.cache-hit != 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: pnpm exec playwright install chromium
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      id: debs
+      with:
+        path: ~/.cache/playwright-debs
+        key: playwright-debs-${{ steps.resolve.outputs.os }}-${{ steps.resolve.outputs.version }}
+    - name: Install browser system packages
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        CACHED: ${{ steps.debs.outputs.cache-hit }}
+      run: |
+        debs="$HOME/.cache/playwright-debs"
+        if [ "$CACHED" = 'true' ]; then
+          shopt -s nullglob
+          files=("$debs"/*.deb)
+          echo "Installing ${#files[@]} cached packages offline"
+          if ! sudo dpkg -i "${files[@]}"; then
+            echo "::warning::Cached packages did not install; falling back to apt."
+            pnpm exec playwright install-deps chromium
+          fi
+        else
+          echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' | sudo tee /etc/apt/apt.conf.d/99-keep-debs >/dev/null
+          sudo rm -f /etc/apt/apt.conf.d/docker-clean
+          sudo apt-get clean
+          pnpm exec playwright install-deps chromium
+          mkdir -p "$debs"
+          find /var/cache/apt/archives -maxdepth 1 -name '*.deb' -exec cp {} "$debs"/ \;
+          count=$(find "$debs" -name '*.deb' | wc -l)
+          if [ "$count" -eq 0 ]; then
+            rm -rf "$debs"
+            echo "::warning::No .deb kept by apt; nothing cached, next runs use apt again."
+          else
+            echo "Cached $count packages for the next runs"
+          fi
+        fi
