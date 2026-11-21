@@ -3,16 +3,17 @@
 Shared engineering foundation for my products: lint, TypeScript and formatting
 presets, runtime utilities and a design system, published to npm under `@cbrl/*`.
 
-| Package                                                 | What it is                                                                       |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| [`@cbrl/tsconfig`](packages/tsconfig)                   | Strict TypeScript presets: `base`, `nextjs`, `react-library`                     |
-| [`@cbrl/eslint-config`](packages/eslint-config)         | ESLint flat config (TS type-aware, React, Next, tests) + custom `cbrl/*` rules   |
-| [`@cbrl/prettier-config`](packages/prettier-config)     | Prettier config, with a `/tailwind` variant                                      |
-| [`@cbrl/commitlint-config`](packages/commitlint-config) | Conventional Commits with required scope                                         |
-| [`@cbrl/env`](packages/env)                             | Fail-fast environment variable readers                                           |
-| [`@cbrl/pg`](packages/pg)                               | Hardened `pg` pool: timeouts, idle-error handler, Supabase CA pin, Cloud SQL IAM |
-| [`@cbrl/testing`](packages/testing)                     | Vitest coverage base, `server-only` shim, axe matcher                            |
-| [`@cbrl/design`](packages/design)                       | Radix + Tailwind v4 design system with overridable tokens                        |
+| Package                                                 | What it is                                                                              |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| [`@cbrl/tsconfig`](packages/tsconfig)                   | Strict TypeScript presets: `base`, `nextjs`, `react-library`                            |
+| [`@cbrl/eslint-config`](packages/eslint-config)         | ESLint flat config (TS type-aware, React, Next, tests) + custom `cbrl/*` rules          |
+| [`@cbrl/prettier-config`](packages/prettier-config)     | Prettier config, with a `/tailwind` variant                                             |
+| [`@cbrl/commitlint-config`](packages/commitlint-config) | Conventional Commits with required scope                                                |
+| [`@cbrl/env`](packages/env)                             | Fail-fast environment variable readers                                                  |
+| [`@cbrl/pg`](packages/pg)                               | Hardened `pg` pool: timeouts, idle-error handler, Supabase CA pin, Cloud SQL IAM        |
+| [`@cbrl/supabase`](packages/supabase)                   | Supabase Auth for Next.js 16: clients, proxy refresh, callback/test routes, local stack |
+| [`@cbrl/testing`](packages/testing)                     | Vitest coverage base, `server-only` shim, axe matcher                                   |
+| [`@cbrl/design`](packages/design)                       | Radix + Tailwind v4 design system with overridable tokens                               |
 
 Also in this repo:
 
