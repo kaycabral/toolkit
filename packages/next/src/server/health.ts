@@ -1,4 +1,4 @@
-import { connection } from 'next/server'
+import { connection } from 'next/server.js'
 
 /** Options for {@link healthRoute}. */
 export interface HealthRouteOptions {

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const connection = vi.hoisted(() => vi.fn(() => Promise.resolve()))
-vi.mock('next/server', () => ({ connection }))
+vi.mock('next/server.js', () => ({ connection }))
 
 const { healthRoute } = await import('./health')
 

@@ -1,5 +1,5 @@
 import type { User } from '@supabase/supabase-js'
-import { NextRequest } from 'next/server'
+import { NextRequest } from 'next/server.js'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { authCallbackRoute, testSignInRoute } from './routes'
 
