@@ -108,6 +108,42 @@ importers:
         specifier: 'catalog:'
         version: 5.9.3
 
+  packages/br:
+    devDependencies:
+      '@arethetypeswrong/cli':
+        specifier: 'catalog:'
+        version: 0.18.5
+      '@cbrl/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@cbrl/testing':
+        specifier: workspace:*
+        version: link:../testing
+      '@cbrl/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.9
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.12(vitest@4.1.12)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.5(jiti@2.6.1)
+      publint:
+        specifier: 'catalog:'
+        version: 0.3.25
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.23.7(@arethetypeswrong/core@0.18.5)(publint@0.3.25)(typescript@5.9.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.12(@opentelemetry/api@1.10.0)(@types/node@25.9.9)(@vitest/coverage-v8@4.1.12)(jsdom@29.1.1)(vite@8.3.8(@types/node@25.9.9)(jiti@2.6.1)(yaml@2.9.1))
+
   packages/commitlint-config:
     dependencies:
       '@commitlint/cli':
