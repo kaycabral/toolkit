@@ -10,6 +10,7 @@ presets, runtime utilities and a design system, published to npm under `@cbrl/*`
 | [`@cbrl/prettier-config`](packages/prettier-config)     | Prettier config, with a `/tailwind` variant                                      |
 | [`@cbrl/commitlint-config`](packages/commitlint-config) | Conventional Commits with required scope                                         |
 | [`@cbrl/env`](packages/env)                             | Fail-fast environment variable readers                                           |
+| [`@cbrl/log`](packages/log)                             | PII-safe structured logger + per-request correlation context                     |
 | [`@cbrl/pg`](packages/pg)                               | Hardened `pg` pool: timeouts, idle-error handler, Supabase CA pin, Cloud SQL IAM |
 | [`@cbrl/testing`](packages/testing)                     | Vitest coverage base, `server-only` shim, axe matcher                            |
 | [`@cbrl/design`](packages/design)                       | Radix + Tailwind v4 design system with overridable tokens                        |
