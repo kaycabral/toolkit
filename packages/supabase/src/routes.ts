@@ -1,5 +1,5 @@
 import type { AuthError, SupabaseClient, User } from '@supabase/supabase-js'
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server.js'
 import { safeNextPath } from './safe-next'
 import { createSupabaseServerClient } from './server'
 

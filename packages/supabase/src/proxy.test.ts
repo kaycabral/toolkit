@@ -1,5 +1,5 @@
 import type { CookieMethodsServer } from '@supabase/ssr'
-import { NextRequest } from 'next/server'
+import { NextRequest } from 'next/server.js'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { SESSION_REFRESH_TIMEOUT_MS, updateSession } from './proxy'
 

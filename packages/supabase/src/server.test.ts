@@ -17,7 +17,7 @@ const cookieStore = vi.hoisted(() => ({
   getAll: vi.fn(() => [{ name: 'sb-access', value: 'a' }]),
   set: vi.fn<(name: string, value: string, options?: CookieOptions) => void>(),
 }))
-vi.mock('next/headers', () => ({ cookies: () => Promise.resolve(cookieStore) }))
+vi.mock('next/headers.js', () => ({ cookies: () => Promise.resolve(cookieStore) }))
 
 async function cookieMethods(): Promise<CookieMethodsServer> {
   await createSupabaseServerClient()

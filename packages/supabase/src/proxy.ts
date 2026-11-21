@@ -1,5 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server.js'
 import { supabasePublicConfig } from './config'
 
 /** Default upper bound for the session refresh before the request goes through anyway. */
