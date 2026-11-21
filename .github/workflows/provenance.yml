@@ -1,0 +1,84 @@
+# Is this commit on main already proven by a pull request?
+#
+# With a ruleset that requires the PR gate (`CI passed` by default) on an
+# up-to-date branch, main's tree is the exact tree the PR proved. This checks
+# that claim through the API instead of re-running the whole pipeline: the
+# merged PR's head has the same tree and a successful gate. When it can't (a
+# direct push through an admin bypass, a PR merged while stale), `verified` is
+# false and the caller runs the full checks before touching production.
+#
+#   jobs:
+#     provenance:
+#       uses: kaycabral/toolkit/.github/workflows/provenance.yml@<sha>
+#       permissions: { contents: read, pull-requests: read, checks: read }
+#     checks:
+#       needs: provenance
+#       if: needs.provenance.outputs.verified != 'true'
+#       uses: ./.github/workflows/checks.yml
+name: Provenance
+
+on:
+  workflow_call:
+    inputs:
+      gate-check:
+        description: Name of the check run that gates every PR.
+        type: string
+        required: false
+        default: CI passed
+      base-branch:
+        type: string
+        required: false
+        default: main
+    outputs:
+      verified:
+        description: "'true' when a merged PR proved this exact tree."
+        value: ${{ jobs.verify.outputs.verified }}
+
+permissions: {}
+
+jobs:
+  verify:
+    name: Proven by PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: read
+    outputs:
+      verified: ${{ steps.verify.outputs.verified }}
+    steps:
+      - id: verify
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          GATE: ${{ inputs.gate-check }}
+          BASE: ${{ inputs.base-branch }}
+        run: |
+          verified=false
+          pr=''
+          # The commit → PR association is eventually consistent right after a merge.
+          for _ in 1 2 3 4 5; do
+            pr=$(gh api "repos/$REPO/commits/$SHA/pulls" \
+              --jq "[.[] | select(.merged_at != null and .base.ref == \"$BASE\")][0] // empty")
+            [ -n "$pr" ] && break
+            sleep 5
+          done
+          if [ -z "$pr" ]; then
+            echo "::notice::No merged PR for $SHA (direct push); the full pipeline must run."
+          else
+            number=$(jq -r .number <<<"$pr")
+            head=$(jq -r .head.sha <<<"$pr")
+            main_tree=$(gh api "repos/$REPO/git/commits/$SHA" --jq .tree.sha)
+            head_tree=$(gh api "repos/$REPO/git/commits/$head" --jq .tree.sha)
+            gate=$(gh api -X GET "repos/$REPO/commits/$head/check-runs" -f check_name="$GATE" -f filter=latest \
+              --jq '[.check_runs[] | select(.app.slug == "github-actions")][0].conclusion // "missing"')
+            echo "PR #$number head $head: tree match=$([ "$main_tree" = "$head_tree" ] && echo yes || echo no), $GATE=$gate"
+            if [ "$main_tree" = "$head_tree" ] && [ "$gate" = "success" ]; then
+              verified=true
+            else
+              echo "::notice::PR #$number does not prove this tree; the full pipeline must run."
+            fi
+          fi
+          echo "verified=$verified" >> "$GITHUB_OUTPUT"

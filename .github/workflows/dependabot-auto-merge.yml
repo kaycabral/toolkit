@@ -1,0 +1,92 @@
+# Merges the Dependabot updates the policy trusts CI to prove (by default the
+# `minor-and-patch` and `actions` groups of templates/dependabot.yml, which
+# never hold a major). Everything else waits for a human.
+#
+# Why not `gh pr merge --auto` from the PR's own workflow: a merge made with the
+# GITHUB_TOKEN never triggers other workflows, so the push-to-main workflow (and
+# the production deploy check Vercel waits on) would silently not run. Instead
+# this runs after the PR workflow is green, merges (the ruleset still demands the
+# gate on an up-to-date branch), then starts the main workflow through
+# workflow_dispatch, the one event the GITHUB_TOKEN is allowed to trigger.
+#
+# Caller (.github/workflows/dependabot-auto-merge.yml in the app):
+#
+#   on:
+#     workflow_run:
+#       workflows: [Pull request]
+#       types: [completed]
+#   permissions: {}
+#   jobs:
+#     merge:
+#       uses: kaycabral/toolkit/.github/workflows/dependabot-auto-merge.yml@<sha>
+#       permissions: { contents: write, pull-requests: write, actions: write }
+name: Dependabot auto-merge
+
+on:
+  workflow_call:
+    inputs:
+      groups:
+        description: Regex alternation of Dependabot group names that may merge unattended.
+        type: string
+        required: false
+        default: minor-and-patch|actions
+      main-workflow:
+        description: Workflow file started on main after the merge (empty to skip).
+        type: string
+        required: false
+        default: main.yml
+
+permissions: {}
+
+jobs:
+  merge:
+    name: Merge trusted Dependabot update
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    steps:
+      - name: Merge and deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          GROUPS: ${{ inputs.groups }}
+          MAIN_WORKFLOW: ${{ inputs.main-workflow }}
+        run: |
+          if ! [[ "$BRANCH" =~ ^dependabot/[^/]+/(.+/)?($GROUPS)-[0-9a-f]+$ ]]; then
+            echo "::notice::'$BRANCH' is not an auto-merge group; it needs a human review."
+            exit 0
+          fi
+          pr=$(gh api "repos/$REPO/pulls?state=open&head=$OWNER:$BRANCH" --jq '.[0] // empty')
+          if [ -z "$pr" ]; then
+            echo "::notice::No open PR for '$BRANCH'."
+            exit 0
+          fi
+          number=$(jq -r .number <<<"$pr")
+          author=$(jq -r .user.login <<<"$pr")
+          head=$(jq -r .head.sha <<<"$pr")
+          if [ "$author" != 'dependabot[bot]' ] || [ "$head" != "$SHA" ]; then
+            echo "::notice::PR #$number is not the Dependabot head CI just proved; skipping."
+            exit 0
+          fi
+          if ! gh pr merge "$number" -R "$REPO" --squash --match-head-commit "$SHA"; then
+            echo "::warning::PR #$number did not merge (behind main or not mergeable); it needs '@dependabot rebase'."
+            exit 0
+          fi
+          if [ -n "$MAIN_WORKFLOW" ]; then
+            gh workflow run "$MAIN_WORKFLOW" -R "$REPO" --ref main
+            echo "Merged PR #$number and started $MAIN_WORKFLOW"
+          else
+            echo "Merged PR #$number"
+          fi
