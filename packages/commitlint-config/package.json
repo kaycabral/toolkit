@@ -25,7 +25,7 @@
     "check:package": "node ../../scripts/check-package.mjs"
   },
   "dependencies": {
-    "@commitlint/config-conventional": "^19.8.1"
+    "@commitlint/config-conventional": "^21.2.4"
   },
   "peerDependencies": {
     "@commitlint/cli": ">=19"
