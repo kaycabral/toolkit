@@ -2,6 +2,8 @@
 
 import * as React from 'react'
 
+import { initials } from '../lib/initials'
+
 import { Avatar, AvatarFallback, AvatarImage } from './avatar'
 import { Button } from './button'
 import {
@@ -12,16 +14,11 @@ import {
   DropdownMenuTrigger,
 } from './dropdown-menu'
 
-// Up-to-two-letter initials from the best available identity string (name →
-// secondary → "?"). Exported so consumers can reuse the exact same derivation
-// elsewhere (e.g. a profile header) instead of re-implementing it.
+/**
+ * @deprecated Use {@link initials}; this alias will be removed in the next minor.
+ */
 export function userMenuInitials(name: string | null, secondary: string | null): string {
-  const source = name?.trim() || secondary?.trim() || ''
-  if (!source) return '?'
-  const parts = source.split(/[\s@.]+/).filter(Boolean)
-  const first = parts[0]?.[0] ?? ''
-  const second = parts[1]?.[0] ?? ''
-  return (first + second).toUpperCase() || '?'
+  return initials(name, secondary)
 }
 
 export type UserMenuProps = {
@@ -72,7 +69,7 @@ export function UserMenu({
           <Button variant="ghost" size="icon-lg" className="rounded-full" aria-label={triggerLabel}>
             <Avatar size="default">
               {avatarUrl ? <AvatarImage src={avatarUrl} alt={name ?? secondary ?? ''} /> : null}
-              <AvatarFallback>{userMenuInitials(name, secondary)}</AvatarFallback>
+              <AvatarFallback>{initials(name, secondary)}</AvatarFallback>
             </Avatar>
           </Button>
         )}

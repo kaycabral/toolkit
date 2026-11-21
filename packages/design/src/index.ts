@@ -1,4 +1,5 @@
 export { cn } from './lib/cn'
+export { initials } from './lib/initials'
 export {
   hasActiveChild as hasActiveNavChild,
   isActive as isNavItemActive,
@@ -100,6 +101,9 @@ export {
   FieldTitle,
 } from './components/field'
 export { HighlightedTextarea } from './components/highlighted-textarea'
+export type { BrandIconProps } from './components/icons/brand-icon'
+export { GoogleIcon } from './components/icons/google-icon'
+export { WhatsappIcon } from './components/icons/whatsapp-icon'
 export { Input } from './components/input'
 export { InputGroup, InputGroupAddon, InputGroupInput } from './components/input-group'
 export { Label } from './components/label'
@@ -154,6 +158,7 @@ export {
 } from './components/table'
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './components/tabs'
 export { Textarea } from './components/textarea'
+export { ThemeProvider } from './components/theme-provider'
 export { Typography, typographyVariants } from './components/typography'
 
 export { Collapsible, CollapsibleContent, CollapsibleTrigger } from './components/collapsible'
