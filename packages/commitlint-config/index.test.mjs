@@ -2,11 +2,12 @@ import lint from '@commitlint/lint'
 import load from '@commitlint/load'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import config from './index.mjs'
-
-// Resolve the config the way @commitlint/cli does: `extends` merged and the
-// parser preset (a module name since config-conventional 20) loaded.
-const { rules, parserPreset } = await load(config)
+// Load index.mjs as the config file, the way @commitlint/cli loads a
+// consumer's commitlint.config.mjs: `extends` resolved from this package and
+// the parser preset (a module name since config-conventional 20) loaded.
+// Passing `file` also stops the upward search from merging the repo's own
+// commitlint.config.mjs into the result.
+const { rules, parserPreset } = await load({}, { cwd: import.meta.dirname, file: 'index.mjs' })
 const check = (message) => lint(message, rules, { parserOpts: parserPreset?.parserOpts })
 
 test('loads the conventional parser preset', () => {
