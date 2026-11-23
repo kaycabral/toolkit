@@ -6,6 +6,11 @@ packages:
 # Same rule as Dependabot's cooldown.
 minimumReleaseAge: 4320
 
+# Install missing peers (pnpm's default, kept explicit). Set here, not in
+# .npmrc: npm 11 (bundled with Node 26) warns on pnpm-only keys there, and
+# husky's `npx` hooks read .npmrc on every commit.
+autoInstallPeers: true
+
 # Versions used to develop and test the toolkit itself. Runtime deps that
 # consumers install are declared with explicit ranges in each package.json.
 catalog:
