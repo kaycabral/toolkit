@@ -10,7 +10,7 @@ minimumReleaseAge: 4320
 # consumers install are declared with explicit ranges in each package.json.
 catalog:
   typescript: ^5.9.3
-  '@types/node': ^25.6.2
+  '@types/node': ^26.6.6
   '@types/react': ^19.2.14
   '@types/react-dom': ^19.2.3
   react: ^19.2.6
