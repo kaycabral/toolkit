@@ -6,11 +6,16 @@ packages:
 # Same rule as Dependabot's cooldown.
 minimumReleaseAge: 4320
 
+# Install missing peers (pnpm's default, kept explicit). Set here, not in
+# .npmrc: npm 11 (bundled with Node 26) warns on pnpm-only keys there, and
+# husky's `npx` hooks read .npmrc on every commit.
+autoInstallPeers: true
+
 # Versions used to develop and test the toolkit itself. Runtime deps that
 # consumers install are declared with explicit ranges in each package.json.
 catalog:
-  typescript: ^5.9.3
-  '@types/node': ^25.6.2
+  typescript: ^6.0.3
+  '@types/node': ^26.6.6
   '@types/react': ^19.2.14
   '@types/react-dom': ^19.2.3
   react: ^19.2.6
@@ -20,10 +25,10 @@ catalog:
   tsdown: ^0.23.7
   publint: ^0.3.25
   '@arethetypeswrong/cli': ^0.18.5
-  vitest: ^4.1.6
-  '@vitest/coverage-v8': ^4.1.6
+  vitest: ^5.1.1
+  '@vitest/coverage-v8': ^5.1.1
   '@vitejs/plugin-react': ^6.0.2
-  '@testing-library/jest-dom': ^6.9.1
+  '@testing-library/jest-dom': ^7.0.1
   '@testing-library/react': ^16.3.2
   '@testing-library/user-event': ^14.6.1
   jsdom: ^29.1.1

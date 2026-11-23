@@ -25,13 +25,14 @@
     "check:package": "node ../../scripts/check-package.mjs"
   },
   "dependencies": {
-    "@commitlint/config-conventional": "^19.8.1"
+    "@commitlint/config-conventional": "^21.2.4"
   },
   "peerDependencies": {
-    "@commitlint/cli": ">=19"
+    "@commitlint/cli": ">=20"
   },
   "devDependencies": {
-    "@commitlint/lint": "^19.8.1",
+    "@commitlint/lint": "^21.2.4",
+    "@commitlint/load": "^21.2.4",
     "publint": "catalog:"
   },
   "publishConfig": {

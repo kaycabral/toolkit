@@ -19,7 +19,7 @@
     "prepare": "node .husky/install.mjs"
   },
   "engines": {
-    "node": ">=22.22.3"
+    "node": "26.x"
   },
   "packageManager": "pnpm@10.33.4+sha512.1c67b3b359b2d408119ba1ed289f34b8fc3c6873412bec6fd264fbdc82489e510fcbecb9ce9d22dae7f3b76269d8441046014bdca53b9979cd7a561ad631b800",
   "prettier": "@cbrl/prettier-config",
@@ -29,12 +29,12 @@
     "@cbrl/prettier-config": "workspace:*",
     "@changesets/changelog-github": "^1.0.1",
     "@changesets/cli": "^3.0.3",
-    "@commitlint/cli": "^19.8.1",
+    "@commitlint/cli": "^21.2.4",
     "eslint": "catalog:",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.5",
     "prettier": "catalog:",
-    "turbo": "^2.11.12",
+    "turbo": "^2.11.13",
     "typescript": "catalog:"
   },
   "lint-staged": {
@@ -47,6 +47,10 @@
     "onlyBuiltDependencies": [
       "esbuild",
       "unrs-resolver"
-    ]
+    ],
+    "overrides": {
+      "handlebars@<4.7.10": "^4.7.10",
+      "minimatch@>=7.0.0 <11.0.1": "^11.0.9"
+    }
   }
 }

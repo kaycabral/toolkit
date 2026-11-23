@@ -25,6 +25,15 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    # Majors blocked by a peer of @cbrl/eslint-config. Remove each entry once
+    # its blocker supports the new major (tracked in kaycabral/toolkit#35):
+    #   - typescript >= 7: typescript-eslint peers `typescript <6.1`.
+    #   - eslint >= 10: eslint-plugin-jsx-a11y peers `eslint` up to ^9.
+    ignore:
+      - dependency-name: typescript
+        versions: ['>=7']
+      - dependency-name: eslint
+        versions: ['>=10']
     # Groups drive auto-merge (dependabot-auto-merge.yml): `minor-and-patch` and
     # the `actions` group below merge by themselves. `critical` holds what CI can't fully prove (payments, auth,
     # database, framework, error reporting) and waits for a human, as do

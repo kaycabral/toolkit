@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config'
-import { coverageBase } from './src/vitest'
+import { coverageBase } from './src/vitest/index.ts'
 
 export default defineConfig({
   test: {

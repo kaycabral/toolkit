@@ -4,7 +4,7 @@ Conventional Commits with a required, lower/kebab-case scope and a 72-char heade
 (so the subject fits a PR title).
 
 ```sh
-pnpm add -D @cbrl/commitlint-config @commitlint/cli
+pnpm add -D @cbrl/commitlint-config @commitlint/cli  # @commitlint/cli >= 20
 ```
 
 ```js

@@ -21,6 +21,6 @@ describe('expectNoA11yViolations', () => {
   })
 
   it('rejects when axe finds a violation (img without alt)', async () => {
-    await expect(expectNoA11yViolations(mount('<img src="x.png">'))).rejects.toThrow()
+    await expect(expectNoA11yViolations(mount('<img src="x.png">'))).rejects.toThrow(/image-alt/)
   })
 })

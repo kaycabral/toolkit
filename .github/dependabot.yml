@@ -21,6 +21,15 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    # Majors blocked by a peer of @cbrl/eslint-config. Remove each entry once
+    # its blocker supports the new major (tracked in kaycabral/toolkit#35):
+    #   - typescript >= 7: typescript-eslint peers `typescript <6.1`.
+    #   - eslint >= 10: eslint-plugin-jsx-a11y peers `eslint` up to ^9.
+    ignore:
+      - dependency-name: typescript
+        versions: ['>=7']
+      - dependency-name: eslint
+        versions: ['>=10']
     groups:
       minor-and-patch:
         update-types:
