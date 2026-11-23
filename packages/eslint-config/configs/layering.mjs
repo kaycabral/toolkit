@@ -12,7 +12,7 @@
 //      A component may call an adapter; an adapter may call core; never the
 //      reverse. core importing an adapter (or ui) is the classic leak that makes
 //      the "pure" core impure by transitivity. Enforced with eslint-plugin-
-//      boundaries' element-types graph.
+//      boundaries' `dependencies` policies.
 //
 // Scoped entirely to the `features/<slice>/<ring>/` convention — an app that
 // hasn't adopted feature slices has no matching files, so this layer is a no-op
@@ -177,34 +177,43 @@ export const layering = [
     },
   },
   // ── Wall 2: ring direction ─────────────────────────────────────────────
+  // Element descriptors match the ring folder anywhere in the path (partial
+  // match is the default), so `src/features/…` and `apps/web/src/features/…`
+  // both classify. The node resolver needs the TS extensions to resolve
+  // extensionless relative imports; without them every target is unknown and
+  // the wall never fires. Path aliases (`@/features/…`) are not resolved here:
+  // wall 1 covers them for core/ through `no-restricted-imports`.
   {
     files: [GLOB_SRC],
     plugins: { boundaries },
     settings: {
       'boundaries/include': ['**/features/**'],
       'boundaries/elements': [
-        { type: 'feat-core', pattern: 'features/*/core/**', mode: 'full' },
-        { type: 'feat-adapters', pattern: 'features/*/adapters/**', mode: 'full' },
-        { type: 'feat-ui', pattern: 'features/*/ui/**', mode: 'full' },
+        { type: 'feat-core', pattern: 'features/*/core', capture: ['slice'] },
+        { type: 'feat-adapters', pattern: 'features/*/adapters', capture: ['slice'] },
+        { type: 'feat-ui', pattern: 'features/*/ui', capture: ['slice'] },
       ],
+      'import/resolver': {
+        node: { extensions: ['.ts', '.tsx', '.mts', '.cts', '.js', '.mjs', '.cjs', '.jsx'] },
+      },
     },
     rules: {
-      'boundaries/element-types': [
+      'boundaries/dependencies': [
         'error',
         {
           default: 'allow',
-          rules: [
+          policies: [
             {
-              from: ['feat-core'],
-              disallow: ['feat-adapters', 'feat-ui'],
+              from: { element: { type: 'feat-core' } },
+              disallow: { to: { element: { type: ['feat-adapters', 'feat-ui'] } } },
               message:
-                'core ({{from}}) must not import {{target}}: dependencies only point down (ui→adapters→core).',
+                'core ({{from.element.captured.slice}}) must not import {{to.element.type}}: dependencies only point down (ui→adapters→core).',
             },
             {
-              from: ['feat-adapters'],
-              disallow: ['feat-ui'],
+              from: { element: { type: 'feat-adapters' } },
+              disallow: { to: { element: { type: 'feat-ui' } } },
               message:
-                'adapters ({{from}}) must not import ui: the flow is ui→adapters, never the reverse.',
+                'adapters ({{from.element.captured.slice}}) must not import ui: the flow is ui→adapters, never the reverse.',
             },
           ],
         },

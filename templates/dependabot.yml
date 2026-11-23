@@ -29,10 +29,13 @@ updates:
     # its blocker supports the new major (tracked in kaycabral/toolkit#35):
     #   - typescript >= 7: typescript-eslint peers `typescript <6.1`.
     #   - eslint >= 10: eslint-plugin-jsx-a11y peers `eslint` up to ^9.
+    #   - @eslint/js >= 10: peers `eslint` ^10, so it lands with ESLint 10.
     ignore:
       - dependency-name: typescript
         versions: ['>=7']
       - dependency-name: eslint
+        versions: ['>=10']
+      - dependency-name: '@eslint/js'
         versions: ['>=10']
     # Groups drive auto-merge (dependabot-auto-merge.yml): `minor-and-patch` and
     # the `actions` group below merge by themselves. `critical` holds what CI can't fully prove (payments, auth,
