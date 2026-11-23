@@ -14,20 +14,37 @@ export type AuthCallbackRouteOptions = {
   failurePath: string
   /**
    * Runs after a successful exchange, before redirecting (e.g. upsert the app's
-   * user row). A throw propagates to the route.
+   * user row). A throw fails closed: the fresh session is signed out (cookies
+   * cleared), `onSessionError` gets the error and the user lands on `failurePath`.
    */
   onSession?: (user: User, supabase: SupabaseClient) => Promise<void> | void
   /** Called when the code exchange fails. */
   onError?: (error: AuthError) => void
+  /** Called with whatever `onSession` threw, after the session is signed out. */
+  onSessionError?: (error: unknown) => void
+}
+
+/**
+ * Drops the session this request just wrote. `local` clears this device's
+ * cookies before any network call; a failure here must not mask the original
+ * error, so it is swallowed.
+ */
+async function signOutLocally(supabase: SupabaseClient): Promise<void> {
+  try {
+    await supabase.auth.signOut({ scope: 'local' })
+  } catch {
+    return
+  }
 }
 
 /**
  * `GET` handler for the OAuth (PKCE) return leg, mounted at
  * `app/auth/callback/route.ts`: exchanges `?code` for a session cookie and
- * redirects to `?next` (same-origin only) or `defaultNext`.
+ * redirects to `?next` (same-origin only) or `defaultNext`. Fails closed:
+ * no session survives a redirect to `failurePath`.
  */
 export function authCallbackRoute(options: AuthCallbackRouteOptions): RouteHandler {
-  const { defaultNext, failurePath, onSession, onError } = options
+  const { defaultNext, failurePath, onSession, onError, onSessionError } = options
   return async function GET(request) {
     const { searchParams, origin } = request.nextUrl
     const code = searchParams.get('code')
@@ -37,10 +54,16 @@ export function authCallbackRoute(options: AuthCallbackRouteOptions): RouteHandl
     if (supabase && code) {
       const { data, error } = await supabase.auth.exchangeCodeForSession(code)
       if (!error) {
-        await onSession?.(data.user, supabase)
-        return NextResponse.redirect(new URL(next, origin))
+        try {
+          await onSession?.(data.user, supabase)
+          return NextResponse.redirect(new URL(next, origin))
+        } catch (sessionError) {
+          await signOutLocally(supabase)
+          onSessionError?.(sessionError)
+        }
+      } else {
+        onError?.(error)
       }
-      onError?.(error)
     }
     return NextResponse.redirect(new URL(failurePath, origin))
   }
