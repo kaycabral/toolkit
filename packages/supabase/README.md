@@ -122,12 +122,18 @@ export const GET = authCallbackRoute({
   failurePath: '/login?error=auth',
   onSession: (user) => upsertUser(sessionUserFromAuthUser(user)),
   onError: (error) => console.warn('code exchange failed', error.code ?? error.name),
+  onSessionError: (error) =>
+    console.error('user upsert failed', error instanceof Error ? error.name : 'unknown'),
 })
 ```
 
 `next` is honoured only when it resolves to a same-origin path; otherwise the
 user lands on `defaultNext`. A missing code, missing config or failed exchange
-redirects to `failurePath`. A throw in `onSession` propagates.
+redirects to `failurePath`. The callback fails closed: when `onSession` throws, the
+fresh session is signed out with `scope: 'local'` (clearing the session cookies
+on the redirect), `onSessionError` receives the error and the user lands on
+`failurePath`. A sign-out failure is swallowed, and the error never reaches the
+client. Keep PII out of what the hooks log.
 
 ```ts
 // src/app/api/e2e-signin/route.ts

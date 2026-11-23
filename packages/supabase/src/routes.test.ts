@@ -11,6 +11,7 @@ type AuthResult = {
 const auth = vi.hoisted(() => ({
   exchangeCodeForSession: vi.fn<(code: string) => Promise<AuthResult>>(),
   signInWithPassword: vi.fn<(body: { email: string; password: string }) => Promise<AuthResult>>(),
+  signOut: vi.fn<(options: { scope: 'local' }) => Promise<{ error: null }>>(),
 }))
 const server = vi.hoisted(() => ({ configured: true }))
 const client = { auth }
@@ -76,6 +77,58 @@ describe('authCallbackRoute', () => {
     await handler(new NextRequest('http://localhost:3000/auth/callback?code=abc'))
 
     expect(onSession).toHaveBeenCalledWith(user, client)
+  })
+
+  describe('when onSession throws', () => {
+    const upsertFailure = new Error('upsert failed')
+
+    function failingCallback(hooks: { onSessionError?: (error: unknown) => void } = {}) {
+      const handler = authCallbackRoute({
+        defaultNext: '/dashboard',
+        failurePath: '/login?error=auth',
+        onSession: () => Promise.reject(upsertFailure),
+        ...hooks,
+      })
+      return handler(new NextRequest('http://localhost:3000/auth/callback?code=abc&next=/x'))
+    }
+
+    beforeEach(() => {
+      auth.exchangeCodeForSession.mockResolvedValue(ok())
+    })
+
+    it('signs the fresh session out locally, reports the error and lands on failurePath', async () => {
+      auth.signOut.mockResolvedValue({ error: null })
+      const onSessionError = vi.fn()
+
+      const response = await failingCallback({ onSessionError })
+
+      expect(auth.signOut).toHaveBeenCalledWith({ scope: 'local' })
+      expect(onSessionError).toHaveBeenCalledWith(upsertFailure)
+      expect(auth.signOut.mock.invocationCallOrder[0]).toBeLessThan(
+        onSessionError.mock.invocationCallOrder[0] ?? 0,
+      )
+      expect(response.status).toBe(307)
+      expect(response.headers.get('location')).toBe('http://localhost:3000/login?error=auth')
+    })
+
+    it('still lands on failurePath when signing out throws too', async () => {
+      auth.signOut.mockRejectedValue(new Error('network down'))
+      const onSessionError = vi.fn()
+
+      const response = await failingCallback({ onSessionError })
+
+      expect(onSessionError).toHaveBeenCalledWith(upsertFailure)
+      expect(response.headers.get('location')).toBe('http://localhost:3000/login?error=auth')
+    })
+
+    it('does not leak the error to the client without an onSessionError hook', async () => {
+      auth.signOut.mockResolvedValue({ error: null })
+
+      const response = await failingCallback()
+
+      expect(response.headers.get('location')).toBe('http://localhost:3000/login?error=auth')
+      await expect(response.text()).resolves.not.toContain('upsert failed')
+    })
   })
 
   it('redirects to failurePath and reports the error when the exchange fails', async () => {
