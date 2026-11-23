@@ -40,7 +40,7 @@
     "check:package": "node ../../scripts/check-package.mjs"
   },
   "dependencies": {
-    "@eslint/js": "^9.39.4",
+    "@eslint/js": "^10.0.1",
     "eslint-plugin-boundaries": "^6.0.2",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-playwright": "^2.2.2",
