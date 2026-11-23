@@ -1,5 +1,11 @@
 # @cbrl/supabase
 
+## 0.2.0
+
+### Minor Changes
+
+- [#45](https://github.com/kaycabral/toolkit/pull/45) [`7f80240`](https://github.com/kaycabral/toolkit/commit/7f80240080d0ab42ffdabbb156b09a155556f36e) Thanks [@kaycabral](https://github.com/kaycabral)! - `authCallbackRoute` fails closed: when `onSession` throws, the session the code exchange just wrote is signed out (`scope: 'local'`, clearing the session cookies), the new `onSessionError` hook receives the error and the user is redirected to `failurePath` instead of getting a 500 while signed in.
+
 ## 0.1.1
 
 ### Patch Changes
