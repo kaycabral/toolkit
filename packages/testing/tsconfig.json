@@ -1,7 +1,10 @@
 {
   "extends": "@cbrl/tsconfig/base.json",
   "compilerOptions": {
-    "lib": ["ES2022", "dom"]
+    "lib": ["ES2022", "dom"],
+    // vitest.config.ts imports src with its .ts extension, as Vite's native
+    // config loader requires.
+    "allowImportingTsExtensions": true
   },
   "include": ["src/**/*.ts", "*.config.ts"]
 }

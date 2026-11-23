@@ -7,14 +7,13 @@
  *   const { container } = render(<Button>Salvar</Button>)
  *   await expectNoA11yViolations(container)
  *
- * The jest-axe matcher is registered once here so callers only deal with the
- * wrapper — no per-file `expect.extend` and no matcher type augmentation.
- * Requires a DOM environment (`environment: 'jsdom'`).
+ * The jest-axe matcher runs directly instead of through `expect.extend`, so
+ * importing this module has no side effects and needs no matcher type
+ * augmentation (Vitest 5 no longer merges jest-axe's `jest.Matchers` typings
+ * into `Assertion`). Requires a DOM environment (`environment: 'jsdom'`).
  */
 import { axe, toHaveNoViolations } from 'jest-axe'
-import { expect } from 'vitest'
-
-expect.extend(toHaveNoViolations)
+import { assert } from 'vitest'
 
 export async function expectNoA11yViolations(container: Element): Promise<void> {
   const results = await axe(container, {
@@ -23,5 +22,6 @@ export async function expectNoA11yViolations(container: Element): Promise<void> 
     // so these always false-positive — disable them here, not at the call site.
     rules: { region: { enabled: false } },
   })
-  expect(results).toHaveNoViolations()
+  const result = toHaveNoViolations.toHaveNoViolations(results)
+  assert(result.pass, result.message())
 }

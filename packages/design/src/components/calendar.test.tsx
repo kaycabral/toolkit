@@ -8,7 +8,7 @@ import { Calendar, CalendarDropdown } from './calendar'
 describe('Calendar', () => {
   it('renders a month grid pinned to pt-BR', () => {
     render(<Calendar mode="single" defaultMonth={new Date(1988, 4, 1)} />)
-    expect(screen.getByRole('grid')).toBeInTheDocument()
+    expect(screen.getByRole('grid')).toHaveClass('w-full', 'border-collapse')
     // pt-BR locale → month caption in Portuguese.
     expect(screen.getByText(/maio/i)).toBeInTheDocument()
   })

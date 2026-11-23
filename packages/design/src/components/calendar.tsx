@@ -14,8 +14,8 @@ import { cn } from '../lib/cn'
 import { Button, buttonVariants } from './button'
 import { Select, SelectContent, SelectItem, SelectTrigger } from './select'
 
-// Calendar primitive — the canonical shadcn (react-day-picker v9) component,
-// adapted to our import paths and pinned to pt-BR. Exposed on its own so
+// Calendar primitive — the canonical shadcn react-day-picker component, on
+// react-day-picker v10 and adapted to our import paths and pinned to pt-BR. Exposed on its own so
 // consumers can build bespoke date surfaces; `DateField` composes it.
 function Calendar({
   className,
@@ -81,7 +81,9 @@ function Calendar({
             : '[&>svg]:text-muted-foreground flex h-8 items-center gap-1 rounded-md pr-1 pl-2 text-sm [&>svg]:size-3.5',
           defaultClassNames.caption_label,
         ),
-        table: 'w-full border-collapse',
+        // v9 accepted (and silently ignored) shadcn's deprecated `table` key; v10
+        // only takes the UI keys, and the <table> is `month_grid`.
+        month_grid: cn('w-full border-collapse', defaultClassNames.month_grid),
         weekdays: cn('flex', defaultClassNames.weekdays),
         weekday: cn(
           'text-muted-foreground flex-1 rounded-md text-[0.8rem] font-normal select-none',
@@ -183,9 +185,8 @@ function CalendarDayButton({
 // `<select>` keeps react-day-picker's `onChange` wired (it gets a real
 // ChangeEvent — no synthetic-event cast); our `Select` is the visible control,
 // driving the hidden one via the native value setter.
-// The subset of react-day-picker's DropdownProps we actually consume (the
-// deprecated `components`/`classNames` are ignored), so the component is
-// directly testable and stays assignable to the `Dropdown` component slot.
+// The subset of react-day-picker's DropdownProps we actually consume, so the
+// component is directly testable and stays assignable to the `Dropdown` slot.
 type CalendarDropdownProps = Pick<
   DropdownProps,
   'options' | 'value' | 'onChange' | 'disabled' | 'aria-label'

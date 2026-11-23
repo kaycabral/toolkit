@@ -29,12 +29,12 @@
     "@cbrl/prettier-config": "workspace:*",
     "@changesets/changelog-github": "^1.0.1",
     "@changesets/cli": "^3.0.3",
-    "@commitlint/cli": "^19.8.1",
+    "@commitlint/cli": "^21.2.4",
     "eslint": "catalog:",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.5",
     "prettier": "catalog:",
-    "turbo": "^2.11.12",
+    "turbo": "^2.11.13",
     "typescript": "catalog:"
   },
   "lint-staged": {
