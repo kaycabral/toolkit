@@ -1,6 +1,6 @@
 {
   "name": "@cbrl/commitlint-config",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared commitlint config: Conventional Commits with a required scope and a 72-char header.",
   "license": "MIT",
   "author": "Kayron Cabral",

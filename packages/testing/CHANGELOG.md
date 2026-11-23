@@ -1,5 +1,11 @@
 # @cbrl/testing
 
+## 0.3.0
+
+### Minor Changes
+
+- [#36](https://github.com/kaycabral/toolkit/pull/36) [`8a45455`](https://github.com/kaycabral/toolkit/commit/8a45455bb4c0e66bdc3575217bd5089bd6de45e3) Thanks [@kaycabral](https://github.com/kaycabral)! - Support Vitest 5 (the `vitest` peer stays `>=3`). `expectNoA11yViolations` now runs jest-axe's matcher directly instead of registering it with `expect.extend`, because Vitest 5 no longer merges jest-axe's `jest.Matchers` typings into `Assertion`. Importing `@cbrl/testing/a11y` therefore has no side effects anymore: code that called `expect(results).toHaveNoViolations()` relying on that import must switch to `expectNoA11yViolations(container)` (or call `expect.extend(toHaveNoViolations)` itself).
+
 ## 0.2.0
 
 ### Minor Changes

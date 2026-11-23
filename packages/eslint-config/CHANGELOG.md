@@ -1,5 +1,11 @@
 # @cbrl/eslint-config
 
+## 0.2.1
+
+### Patch Changes
+
+- [#36](https://github.com/kaycabral/toolkit/pull/36) [`8a45455`](https://github.com/kaycabral/toolkit/commit/8a45455bb4c0e66bdc3575217bd5089bd6de45e3) Thanks [@kaycabral](https://github.com/kaycabral)! - Bump `globals` to `^17.14.0` (browser globals now come from both Chrome and Firefox; AudioWorklet globals such as `registerProcessor` left `globals.browser`) and narrow the `typescript` peer to `>=5.0.0 <6.1`, the range `typescript-eslint` actually supports. TypeScript 6.1+ and 7 were never usable with this config; the peer now says so.
+
 ## 0.2.0
 
 ### Minor Changes
