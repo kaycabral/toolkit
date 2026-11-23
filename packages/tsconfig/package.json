@@ -1,6 +1,6 @@
 {
   "name": "@cbrl/tsconfig",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Strict TypeScript presets (base, Next.js app, React library) for bundler-resolved projects.",
   "license": "MIT",
   "author": "Kayron Cabral",
