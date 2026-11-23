@@ -31,17 +31,19 @@
     "globs.mjs",
     "plugin.mjs",
     "configs/",
+    "!configs/*.test.mjs",
+    "!configs/fixtures/",
     "rules/*.mjs",
     "!rules/*.test.mjs"
   ],
   "scripts": {
     "lint": "eslint .",
-    "test": "node --test rules/*.test.mjs",
+    "test": "node --test rules/*.test.mjs configs/*.test.mjs",
     "check:package": "node ../../scripts/check-package.mjs"
   },
   "dependencies": {
     "@eslint/js": "^9.39.4",
-    "eslint-plugin-boundaries": "^6.0.2",
+    "eslint-plugin-boundaries": "^7.4.4",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-playwright": "^2.2.2",
     "eslint-plugin-sonarjs": "^4.0.3",
