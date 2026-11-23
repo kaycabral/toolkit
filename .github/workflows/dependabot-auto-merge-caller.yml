@@ -1,0 +1,22 @@
+# Merges the Dependabot groups CI can prove (minor-and-patch, actions) once the
+# CI workflow is green on the PR. No main workflow is started: Dependabot PRs
+# carry no changeset, so there is nothing to release.
+name: Dependabot auto-merge
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  merge:
+    name: Merge
+    uses: ./.github/workflows/dependabot-auto-merge.yml
+    with:
+      main-workflow: ''
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
