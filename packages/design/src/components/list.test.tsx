@@ -154,7 +154,10 @@ describe('List', () => {
         renderItem={(c) => ({ title: c.name, onClick })}
       />,
     )
-    await userEvent.click(screen.getByRole('button', { name: 'Maria Silva' }))
+    const row = screen.getByRole('button', { name: 'Maria Silva' })
+    // Spans the row and reads left-aligned, like link and static rows.
+    expect(row).toHaveClass('w-full', 'text-left')
+    await userEvent.click(row)
     expect(onClick).toHaveBeenCalledTimes(1)
   })
 

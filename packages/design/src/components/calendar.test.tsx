@@ -1,5 +1,5 @@
 import { expectNoA11yViolations } from '@cbrl/testing/a11y'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -36,6 +36,13 @@ describe('Calendar', () => {
     )
     // Month + year selects (the whole point for far-past dates like birthdays).
     expect(screen.getAllByRole('combobox').length).toBeGreaterThanOrEqual(2)
+    // The arrows' nav overlays the caption row: it must let clicks through to
+    // the selects (jsdom has no hit-testing, so assert the contract).
+    const nav = screen.getByRole('navigation')
+    expect(nav).toHaveClass('pointer-events-none')
+    for (const arrow of within(nav).getAllByRole('button')) {
+      expect(arrow).toHaveClass('pointer-events-auto')
+    }
   })
 
   it('navigates via the Select dropdowns (our primitive, not native)', async () => {

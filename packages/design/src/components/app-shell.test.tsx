@@ -2,7 +2,7 @@ import { expectNoA11yViolations } from '@cbrl/testing/a11y'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { CalendarDays, CreditCard } from 'lucide-react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { type NavItem, type NavSection } from '../lib/nav'
 import { AppShell } from './app-shell'
@@ -45,6 +45,25 @@ function renderShell(pathname = '/me/appointments') {
 }
 
 describe('AppShell', () => {
+  it('lets the app control the expanded state', async () => {
+    const onOpenChange = vi.fn()
+    render(
+      <AppShell
+        brand={<span>Minha conta</span>}
+        sections={sections}
+        pathname="/me/appointments"
+        renderNavLink={renderNavLink}
+        open={false}
+        onOpenChange={onOpenChange}
+      >
+        <main>conteúdo</main>
+      </AppShell>,
+    )
+    await userEvent.click(screen.getAllByRole('button', { name: 'Toggle Sidebar' })[0]!)
+    // Controlled and collapsed: the toggle asks the app to expand it.
+    expect(onOpenChange).toHaveBeenCalledWith(true)
+  })
+
   it('renders the brand, nav links, footer and header slots', () => {
     renderShell()
     expect(screen.getByText('Minha conta')).toBeInTheDocument()

@@ -62,6 +62,15 @@ export type AppShellProps = {
   collapsible?: React.ComponentProps<typeof Sidebar>['collapsible']
   /** Accessible label for the nav landmark. Defaults to `Navegação principal`. */
   navLabel?: string
+  /** Whether the sidebar starts expanded (uncontrolled). Defaults to `true`. */
+  defaultOpen?: boolean
+  /**
+   * Expanded state, controlled by the app together with `onOpenChange` — e.g.
+   * to remember the user's choice across reloads (persistence is the app's).
+   */
+  open?: boolean
+  /** Fired with the new expanded state on every toggle. */
+  onOpenChange?: (open: boolean) => void
   children: React.ReactNode
 }
 
@@ -76,11 +85,14 @@ export function AppShell({
   headerEnd,
   collapsible = 'icon',
   navLabel = 'Navegação principal',
+  defaultOpen = true,
+  open,
+  onOpenChange,
   children,
 }: AppShellProps) {
   return (
     <TooltipProvider delayDuration={0}>
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={defaultOpen} open={open} onOpenChange={onOpenChange}>
         <Sidebar collapsible={collapsible}>
           <SidebarHeader>
             <div className="flex items-center gap-2 px-2 py-1.5">{brand}</div>

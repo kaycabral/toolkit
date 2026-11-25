@@ -630,7 +630,9 @@ function List<T>({
           onClick={descriptor.onClick}
           data-slot="list-item"
           data-interactive
-          className={interactiveClass}
+          // A <button> sizes to its content and centers its text; the row must
+          // span the <li> and read left-aligned like the link and static rows.
+          className={cn(interactiveClass, 'w-full text-left')}
         >
           {inner}
         </button>
