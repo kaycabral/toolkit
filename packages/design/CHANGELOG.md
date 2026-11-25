@@ -1,5 +1,11 @@
 # @cbrl/design
 
+## 0.5.0
+
+### Minor Changes
+
+- [#53](https://github.com/kaycabral/toolkit/pull/53) [`13d50a2`](https://github.com/kaycabral/toolkit/commit/13d50a21b007a0f8359c1eef534761f20de7fbed) Thanks [@kaycabral](https://github.com/kaycabral)! - Tabs: `variant="line"` on `TabsList` (underlined, full-width, scrolls sideways) and `TabsCount` for item counts beside a tab label.
+
 ## 0.4.0
 
 ### Minor Changes
