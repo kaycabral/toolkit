@@ -1,5 +1,17 @@
 # @cbrl/design
 
+## 0.4.0
+
+### Minor Changes
+
+- [#51](https://github.com/kaycabral/toolkit/pull/51) [`3959e57`](https://github.com/kaycabral/toolkit/commit/3959e57bc94e3313c3e6a04e877d8abcdf1672d6) Thanks [@kaycabral](https://github.com/kaycabral)! - `AppShell` takes `defaultOpen`, `open` and `onOpenChange` (passed to its `SidebarProvider`), so an app can control the sidebar's expanded state — e.g. remember it across reloads in its own storage.
+
+### Patch Changes
+
+- [#51](https://github.com/kaycabral/toolkit/pull/51) [`3959e57`](https://github.com/kaycabral/toolkit/commit/3959e57bc94e3313c3e6a04e877d8abcdf1672d6) Thanks [@kaycabral](https://github.com/kaycabral)! - `Calendar`/`DateField` with `captionLayout="dropdown"`: the month and year selects open again. The arrows' nav bar covered the caption row and swallowed the clicks; now only the arrows take pointer events.
+
+- [#51](https://github.com/kaycabral/toolkit/pull/51) [`3959e57`](https://github.com/kaycabral/toolkit/commit/3959e57bc94e3313c3e6a04e877d8abcdf1672d6) Thanks [@kaycabral](https://github.com/kaycabral)! - `List`: rows with `onClick` (rendered as a `<button>`) now span the whole row and align left, like link and static rows; before they were content-sized and centered.
+
 ## 0.3.0
 
 ### Minor Changes
