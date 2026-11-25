@@ -1,5 +1,6 @@
 'use client'
 
+import { cva, type VariantProps } from 'class-variance-authority'
 import { Tabs as TabsPrimitive } from 'radix-ui'
 import * as React from 'react'
 
@@ -15,14 +16,32 @@ function Tabs({ className, ...props }: React.ComponentProps<typeof TabsPrimitive
   )
 }
 
-function TabsList({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.List>) {
+/**
+ * `default`: segmented pill on a muted track (few short options).
+ * `line`: underlined tabs on a bottom border, full width and scrolling
+ * sideways when they do not fit — for widgets and sections whose tabs carry
+ * counts or longer labels.
+ */
+const tabsListVariants = cva('group/tabs-list text-muted-foreground inline-flex items-center', {
+  variants: {
+    variant: {
+      default: 'bg-muted h-9 w-fit justify-center rounded-lg p-1',
+      line: 'border-border w-full justify-start gap-4 overflow-x-auto border-b [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+    },
+  },
+  defaultVariants: { variant: 'default' },
+})
+
+function TabsList({
+  className,
+  variant = 'default',
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.List> & VariantProps<typeof tabsListVariants>) {
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
-      className={cn(
-        'bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-1',
-        className,
-      )}
+      data-variant={variant}
+      className={cn(tabsListVariants({ variant }), className)}
       {...props}
     />
   )
@@ -33,9 +52,45 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "text-foreground focus-visible:ring-ring/50 data-[state=active]:bg-background inline-flex items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-all focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "focus-visible:ring-ring/50 relative inline-flex shrink-0 items-center justify-center gap-1.5 text-sm font-medium whitespace-nowrap transition-all focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        // default (pill)
+        'group-data-[variant=default]/tabs-list:text-foreground group-data-[variant=default]/tabs-list:data-[state=active]:bg-background group-data-[variant=default]/tabs-list:rounded-md group-data-[variant=default]/tabs-list:px-2 group-data-[variant=default]/tabs-list:py-1 group-data-[variant=default]/tabs-list:data-[state=active]:shadow',
+        // line (underline)
+        'group-data-[variant=line]/tabs-list:hover:text-foreground group-data-[variant=line]/tabs-list:data-[state=active]:text-foreground group-data-[variant=line]/tabs-list:data-[state=active]:after:bg-foreground group-data-[variant=line]/tabs-list:pt-1 group-data-[variant=line]/tabs-list:pb-2.5 group-data-[variant=line]/tabs-list:after:absolute group-data-[variant=line]/tabs-list:after:inset-x-0 group-data-[variant=line]/tabs-list:after:-bottom-px group-data-[variant=line]/tabs-list:after:h-0.5 group-data-[variant=line]/tabs-list:after:rounded-full',
         className,
       )}
+      {...props}
+    />
+  )
+}
+
+/**
+ * Count beside a tab label (items in that tab). `tone="destructive"` flags
+ * what needs attention (e.g. overdue). Plain text, so the tab reads as
+ * "Atrasadas 2".
+ */
+const tabsCountVariants = cva(
+  'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium tabular-nums',
+  {
+    variants: {
+      tone: {
+        default: 'bg-muted text-muted-foreground',
+        destructive: 'bg-destructive/10 text-destructive',
+      },
+    },
+    defaultVariants: { tone: 'default' },
+  },
+)
+
+function TabsCount({
+  className,
+  tone = 'default',
+  ...props
+}: React.ComponentProps<'span'> & VariantProps<typeof tabsCountVariants>) {
+  return (
+    <span
+      data-slot="tabs-count"
+      className={cn(tabsCountVariants({ tone }), className)}
       {...props}
     />
   )
@@ -54,4 +109,4 @@ function TabsContent({ className, ...props }: React.ComponentProps<typeof TabsPr
   )
 }
 
-export { Tabs, TabsContent, TabsList, TabsTrigger }
+export { Tabs, TabsContent, TabsCount, TabsList, tabsListVariants, TabsTrigger }
