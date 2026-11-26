@@ -67,7 +67,20 @@ function AvatarBadge({ className, ...props }: React.ComponentProps<'span'>) {
   )
 }
 
-function AvatarGroup({ className, ...props }: React.ComponentProps<'div'>) {
+type AvatarGroupProps = React.ComponentProps<'div'> & {
+  /**
+   * Show at most this many children; the rest collapse into an
+   * `AvatarGroupCount` reading "+K". Omit to render every child.
+   */
+  max?: number
+  /** Accessible name of the "+K" count. Defaults to `"K more"`. */
+  overflowLabel?: (hidden: number) => string
+}
+
+function AvatarGroup({ className, max, overflowLabel, children, ...props }: AvatarGroupProps) {
+  const items = React.Children.toArray(children)
+  const limit = max === undefined ? items.length : Math.max(0, Math.floor(max))
+  const hidden = items.length - limit
   return (
     <div
       data-slot="avatar-group"
@@ -76,7 +89,14 @@ function AvatarGroup({ className, ...props }: React.ComponentProps<'div'>) {
         className,
       )}
       {...props}
-    />
+    >
+      {hidden > 0 ? items.slice(0, limit) : children}
+      {hidden > 0 ? (
+        <AvatarGroupCount role="img" aria-label={overflowLabel?.(hidden) ?? `${hidden} more`}>
+          +{hidden}
+        </AvatarGroupCount>
+      ) : null}
+    </div>
   )
 }
 

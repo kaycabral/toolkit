@@ -39,6 +39,22 @@ import { ThemeProvider, Toaster } from '@cbrl/design'
 </ThemeProvider>
 ```
 
+### Surfaces and elevation
+
+Light mode paints the page (`--background`) and the sidebar a soft gray, and
+cards and popovers white, so content surfaces stand out. In dark mode the
+popover is a step lighter than the card (shadows barely show on dark). Use
+`shadow-popup` for floating surfaces that sit over content (event popups,
+detail cards):
+
+```tsx
+<div className="bg-popover text-popover-foreground shadow-popup rounded-xl">…</div>
+```
+
+Prefer `bg-card` (not `bg-background`) for anything that must match the card it
+sits on. To keep an all-white page, redefine `--background` and `--sidebar` in
+your `:root`.
+
 ## Usage
 
 ```tsx
@@ -60,6 +76,80 @@ or `'?'`.
 
 ```tsx
 <AvatarFallback>{initials(user.name, user.email)}</AvatarFallback>
+```
+
+### Avatar group
+
+`AvatarGroup` overlaps its avatars. Pass `max` to show the first N and collapse
+the rest into a "+K" `AvatarGroupCount` (accessible name `"K more"`, override
+with `overflowLabel`). Without `max` it renders every child, as before.
+
+```tsx
+<AvatarGroup max={3} overflowLabel={(n) => `mais ${n} pessoas`}>
+  {members.map((m) => (
+    <Avatar key={m.id}>
+      <AvatarImage src={m.avatarUrl} alt={m.name} />
+      <AvatarFallback>{initials(m.name)}</AvatarFallback>
+    </Avatar>
+  ))}
+</AvatarGroup>
+```
+
+### Status
+
+`StatusDot` is a small status indicator: `tone` (`success`, `warning`,
+`destructive`, `info`, `muted`), `size` (`sm`, `default`, `lg`) and an optional
+`pulse` ring (off under reduced motion). Give it a `label` when nothing next to
+it says the status; without one it is decorative (`aria-hidden`).
+
+```tsx
+<span className="flex items-center gap-2">
+  <StatusDot tone="success" pulse /> Sincronizado
+</span>
+<StatusDot tone="destructive" label="Falha na sincronização" />
+```
+
+`Badge` has the same tones as tinted variants for status text:
+`<Badge variant="success">Ativo</Badge>` (`warning`, `info`, and the existing
+`destructive`, `secondary` for neutral).
+
+### Button group
+
+`ButtonGroup` joins related buttons into one control (shadcn's button-group):
+inner borders and radii collapse, the focused button rises above its
+neighbors, and `orientation="vertical"` stacks them. `ButtonGroupSeparator`
+draws a divider (useful between same-variant buttons) and `ButtonGroupText`
+holds a label or addon. Nest groups to space them (`gap-2`).
+
+Split button (main action + menu of related actions):
+
+```tsx
+import {
+  Button,
+  ButtonGroup,
+  ButtonGroupSeparator,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@cbrl/design'
+import { ChevronDown } from 'lucide-react'
+
+;<ButtonGroup aria-label="Salvar">
+  <Button onClick={save}>Salvar</Button>
+  <ButtonGroupSeparator />
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button size="icon" aria-label="Mais opções de salvar">
+        <ChevronDown />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end">
+      <DropdownMenuItem onSelect={saveAsDraft}>Salvar como rascunho</DropdownMenuItem>
+      <DropdownMenuItem onSelect={saveAndNew}>Salvar e criar outro</DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+</ButtonGroup>
 ```
 
 ### App shell
@@ -104,6 +194,79 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 The shell handles the `<nav aria-label>` landmark, the active item, closing the
 mobile drawer and tooltips when collapsed. The sidebar primitives (`Sidebar`,
 `SidebarProvider`, `SidebarMenu*`, `useSidebar`, …) are exported for custom shells.
+
+### Tabs and scrolling strips
+
+`TabsList` (both variants) never hides the active tab: when the tabs don't
+fit it scrolls sideways without a scrollbar, fades only the edges that hide
+tabs (`data-fade-start` / `data-fade-end`) and brings the active tab into view
+on mount, resize and change (first tab to the start, last to the end, others
+centered; instant under `prefers-reduced-motion`). Opt out with
+`scrollable={false}`.
+
+```tsx
+<Tabs defaultValue="all">
+  <TabsList variant="line">
+    <TabsTrigger value="all">All</TabsTrigger>
+    <TabsTrigger value="overdue">
+      Overdue <TabsCount tone="destructive">2</TabsCount>
+    </TabsTrigger>
+  </TabsList>
+</Tabs>
+```
+
+The same behavior for any horizontal strip (a nav row with `aria-current`):
+`useScrollStrip(ref, '[aria-current="page"]')` returns `{ start, end }` (which
+edges hide content). `useElementSize()` returns a React 19 cleanup ref and the
+element's `{ width, height }`, following resizes:
+
+```tsx
+const [ref, { width }] = useElementSize()
+return <div ref={ref}>{width > 480 ? <Wide /> : <Narrow />}</div>
+```
+
+### Settings dialog
+
+`SettingsDialog` is the settings-modal shell: a section nav (a column from
+`sm`, a sideways-scrolling strip on phones that keeps the active section in
+view), a header with the active section's label and description, and a
+scrolling content area. The app decides which sections a user sees and loads
+each section's data; the dialog only renders `children` for the active one.
+`useHashSection(prefix, keys?)` routes it through `#<prefix>/<section>`
+(`hashchange` in, `history.replaceState` on switch and close):
+
+```tsx
+'use client'
+
+import { SettingsDialog, useHashSection, type SettingsDialogSection } from '@cbrl/design'
+import { CreditCard, User } from 'lucide-react'
+
+type Key = 'profile' | 'billing'
+const SECTIONS: readonly SettingsDialogSection<Key>[] = [
+  { key: 'profile', label: 'Perfil', icon: User, description: 'Seu nome e foto.' },
+  { key: 'billing', label: 'Cobrança', icon: CreditCard },
+]
+
+export function SettingsModal() {
+  const { section, open, close } = useHashSection<Key>('settings', ['profile', 'billing'])
+  return (
+    <SettingsDialog
+      open={section !== null}
+      onOpenChange={(next) => !next && close()}
+      sections={SECTIONS}
+      value={section ?? 'profile'}
+      onValueChange={open}
+      navLabel="Seções de configuração"
+    >
+      {section === 'billing' ? <BillingPanel /> : <ProfilePanel />}
+    </SettingsDialog>
+  )
+}
+// Anywhere: <a href="#settings/billing">Cobrança</a>
+```
+
+Uncontrolled use: `defaultOpen`/`defaultValue`. Slots: `settings-dialog`,
+`settings-dialog-nav`, `settings-dialog-content`.
 
 ## Compatibility contract
 

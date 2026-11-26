@@ -49,6 +49,12 @@ export {
 } from './components/breadcrumb'
 export { Button, buttonVariants } from './components/button'
 export {
+  ButtonGroup,
+  ButtonGroupSeparator,
+  ButtonGroupText,
+  buttonGroupVariants,
+} from './components/button-group'
+export {
   Card,
   CardAction,
   CardContent,
@@ -144,6 +150,7 @@ export {
 } from './components/select'
 export { Skeleton } from './components/skeleton'
 export { Toaster } from './components/sonner'
+export { StatusDot, statusDotVariants, type StatusDotProps } from './components/status-dot'
 export { Stepper } from './components/stepper'
 export { Switch } from './components/switch'
 export {
@@ -173,6 +180,11 @@ export { Popover, PopoverContent, PopoverTrigger } from './components/popover'
 export { ScrollArea, ScrollBar } from './components/scroll-area'
 export { Separator } from './components/separator'
 export { SettingRow, SettingRowGroup } from './components/setting-row'
+export {
+  SettingsDialog,
+  type SettingsDialogProps,
+  type SettingsDialogSection,
+} from './components/settings-dialog'
 export { SettingsSection } from './components/settings-section'
 export {
   Sheet,
@@ -211,4 +223,7 @@ export {
   useSidebar,
 } from './components/sidebar'
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './components/tooltip'
+export { useElementSize, type ElementSize } from './hooks/use-element-size'
+export { useHashSection, type HashSection } from './hooks/use-hash-section'
 export { useIsMobile } from './hooks/use-mobile'
+export { useScrollStrip, type ScrollStripEdges } from './hooks/use-scroll-strip'

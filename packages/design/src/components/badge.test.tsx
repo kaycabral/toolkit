@@ -4,7 +4,17 @@ import { describe, expect, it } from 'vitest'
 
 import { Badge, badgeVariants } from './badge'
 
-const VARIANTS = ['default', 'secondary', 'destructive', 'outline', 'ghost', 'link'] as const
+const VARIANTS = [
+  'default',
+  'secondary',
+  'destructive',
+  'success',
+  'warning',
+  'info',
+  'outline',
+  'ghost',
+  'link',
+] as const
 
 describe('Badge', () => {
   it('renders each variant and reflects it on data-variant', () => {
