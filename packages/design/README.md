@@ -105,6 +105,36 @@ The shell handles the `<nav aria-label>` landmark, the active item, closing the
 mobile drawer and tooltips when collapsed. The sidebar primitives (`Sidebar`,
 `SidebarProvider`, `SidebarMenu*`, `useSidebar`, …) are exported for custom shells.
 
+### Tabs and scrolling strips
+
+`TabsList` (both variants) never hides the active tab: when the tabs don't
+fit it scrolls sideways without a scrollbar, fades only the edges that hide
+tabs (`data-fade-start` / `data-fade-end`) and brings the active tab into view
+on mount, resize and change (first tab to the start, last to the end, others
+centered; instant under `prefers-reduced-motion`). Opt out with
+`scrollable={false}`.
+
+```tsx
+<Tabs defaultValue="all">
+  <TabsList variant="line">
+    <TabsTrigger value="all">All</TabsTrigger>
+    <TabsTrigger value="overdue">
+      Overdue <TabsCount tone="destructive">2</TabsCount>
+    </TabsTrigger>
+  </TabsList>
+</Tabs>
+```
+
+The same behavior for any horizontal strip (a nav row with `aria-current`):
+`useScrollStrip(ref, '[aria-current="page"]')` returns `{ start, end }` (which
+edges hide content). `useElementSize()` returns a React 19 cleanup ref and the
+element's `{ width, height }`, following resizes:
+
+```tsx
+const [ref, { width }] = useElementSize()
+return <div ref={ref}>{width > 480 ? <Wide /> : <Narrow />}</div>
+```
+
 ## Compatibility contract
 
 Breaking changes ship only as major versions (minor while `0.x`). The public

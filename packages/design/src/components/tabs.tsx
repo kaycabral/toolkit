@@ -4,7 +4,9 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { Tabs as TabsPrimitive } from 'radix-ui'
 import * as React from 'react'
 
+import { useScrollStrip } from '../hooks/use-scroll-strip'
 import { cn } from '../lib/cn'
+import { fadeMask } from '../lib/scroll-target'
 
 function Tabs({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Root>) {
   return (
@@ -25,23 +27,57 @@ function Tabs({ className, ...props }: React.ComponentProps<typeof TabsPrimitive
 const tabsListVariants = cva('group/tabs-list text-muted-foreground inline-flex items-center', {
   variants: {
     variant: {
-      default: 'bg-muted h-9 w-fit justify-center rounded-lg p-1',
-      line: 'border-border h-9 w-full justify-start gap-4 overflow-x-auto overflow-y-hidden border-b [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+      default: 'bg-muted h-9 w-fit max-w-full justify-center-safe rounded-lg p-1',
+      line: 'border-border h-9 w-full justify-start gap-4 border-b',
     },
   },
   defaultVariants: { variant: 'default' },
 })
 
+const ACTIVE_TAB = '[role="tab"][data-state="active"]'
+
+/**
+ * `scrollable` (default `true`): the list never hides the active tab. It
+ * scrolls sideways without a scrollbar, fades only the edges that hide tabs
+ * (`data-fade-start` / `data-fade-end`), and brings the active tab into view
+ * on mount, resize and change (first to the start, last to the end, others
+ * centered; instant under reduced motion). `scrollable={false}` restores a
+ * plain, non-scrolling list.
+ */
 function TabsList({
   className,
   variant = 'default',
+  scrollable = true,
+  ref,
+  style,
   ...props
-}: React.ComponentProps<typeof TabsPrimitive.List> & VariantProps<typeof tabsListVariants>) {
+}: React.ComponentProps<typeof TabsPrimitive.List> &
+  VariantProps<typeof tabsListVariants> & { scrollable?: boolean }) {
+  const stripRef = React.useRef<HTMLDivElement>(null)
+  const edges = useScrollStrip(stripRef, ACTIVE_TAB, scrollable)
+  const setRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      stripRef.current = node
+      if (typeof ref === 'function') ref(node)
+      else if (ref) ref.current = node
+    },
+    [ref],
+  )
   return (
     <TabsPrimitive.List
+      ref={setRef}
       data-slot="tabs-list"
       data-variant={variant}
-      className={cn(tabsListVariants({ variant }), className)}
+      data-scrollable={scrollable || undefined}
+      data-fade-start={edges.start || undefined}
+      data-fade-end={edges.end || undefined}
+      className={cn(
+        tabsListVariants({ variant }),
+        scrollable &&
+          'overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+        className,
+      )}
+      style={scrollable ? { maskImage: fadeMask(edges), ...style } : style}
       {...props}
     />
   )

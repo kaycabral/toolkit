@@ -211,4 +211,6 @@ export {
   useSidebar,
 } from './components/sidebar'
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './components/tooltip'
+export { useElementSize, type ElementSize } from './hooks/use-element-size'
 export { useIsMobile } from './hooks/use-mobile'
+export { useScrollStrip, type ScrollStripEdges } from './hooks/use-scroll-strip'
