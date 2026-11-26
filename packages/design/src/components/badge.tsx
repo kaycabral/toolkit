@@ -13,6 +13,13 @@ const badgeVariants = cva(
         secondary: 'bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80',
         destructive:
           'bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20',
+        // Status tones, tinted like `destructive` (shadcn style). Palette colors
+        // (no tokens yet); same hues as StatusDot.
+        success:
+          'bg-emerald-500/15 text-emerald-700 focus-visible:ring-emerald-500/20 dark:text-emerald-300 [a]:hover:bg-emerald-500/25',
+        warning:
+          'bg-amber-500/15 text-amber-700 focus-visible:ring-amber-500/20 dark:text-amber-300 [a]:hover:bg-amber-500/25',
+        info: 'bg-sky-500/15 text-sky-700 focus-visible:ring-sky-500/20 dark:text-sky-300 [a]:hover:bg-sky-500/25',
         outline: 'border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground',
         ghost: 'hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50',
         link: 'text-primary underline-offset-4 hover:underline',

@@ -144,6 +144,7 @@ export {
 } from './components/select'
 export { Skeleton } from './components/skeleton'
 export { Toaster } from './components/sonner'
+export { StatusDot, statusDotVariants, type StatusDotProps } from './components/status-dot'
 export { Stepper } from './components/stepper'
 export { Switch } from './components/switch'
 export {
