@@ -62,6 +62,24 @@ or `'?'`.
 <AvatarFallback>{initials(user.name, user.email)}</AvatarFallback>
 ```
 
+### Status
+
+`StatusDot` is a small status indicator: `tone` (`success`, `warning`,
+`destructive`, `info`, `muted`), `size` (`sm`, `default`, `lg`) and an optional
+`pulse` ring (off under reduced motion). Give it a `label` when nothing next to
+it says the status; without one it is decorative (`aria-hidden`).
+
+```tsx
+<span className="flex items-center gap-2">
+  <StatusDot tone="success" pulse /> Sincronizado
+</span>
+<StatusDot tone="destructive" label="Falha na sincronização" />
+```
+
+`Badge` has the same tones as tinted variants for status text:
+`<Badge variant="success">Ativo</Badge>` (`warning`, `info`, and the existing
+`destructive`, `secondary` for neutral).
+
 ### App shell
 
 `AppShell` renders the whole authenticated layout (collapsible sidebar with brand,
