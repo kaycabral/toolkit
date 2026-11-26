@@ -62,6 +62,23 @@ or `'?'`.
 <AvatarFallback>{initials(user.name, user.email)}</AvatarFallback>
 ```
 
+### Avatar group
+
+`AvatarGroup` overlaps its avatars. Pass `max` to show the first N and collapse
+the rest into a "+K" `AvatarGroupCount` (accessible name `"K more"`, override
+with `overflowLabel`). Without `max` it renders every child, as before.
+
+```tsx
+<AvatarGroup max={3} overflowLabel={(n) => `mais ${n} pessoas`}>
+  {members.map((m) => (
+    <Avatar key={m.id}>
+      <AvatarImage src={m.avatarUrl} alt={m.name} />
+      <AvatarFallback>{initials(m.name)}</AvatarFallback>
+    </Avatar>
+  ))}
+</AvatarGroup>
+```
+
 ### App shell
 
 `AppShell` renders the whole authenticated layout (collapsible sidebar with brand,
