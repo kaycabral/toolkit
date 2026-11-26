@@ -203,7 +203,9 @@ describe('public API surface', () => {
         "statusDotVariants",
         "tabsListVariants",
         "typographyVariants",
+        "useElementSize",
         "useIsMobile",
+        "useScrollStrip",
         "useSidebar",
         "userMenuInitials",
       ]
