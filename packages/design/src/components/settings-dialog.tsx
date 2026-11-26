@@ -2,7 +2,9 @@
 
 import * as React from 'react'
 
+import { useScrollStrip } from '../hooks/use-scroll-strip'
 import { cn } from '../lib/cn'
+import { fadeMask } from '../lib/scroll-target'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './dialog'
 import { ScrollArea } from './scroll-area'
 
@@ -111,17 +113,19 @@ function SettingsDialogNav<K extends string>({
 }) {
   const ref = React.useRef<HTMLElement>(null)
 
-  // Phones: keep the active section visible in the horizontal strip.
-  React.useEffect(() => {
-    const item = ref.current?.querySelector<HTMLElement>('[aria-current="page"]')
-    item?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
-  }, [current])
+  // Phones: the nav is a horizontal strip; keep the active section in view and
+  // fade only the edges that hide sections. As a column (sm+) nothing
+  // overflows sideways, so there is no mask.
+  const edges = useScrollStrip(ref, '[aria-current="page"]')
 
   return (
     <nav
       ref={ref}
       aria-label={label}
       data-slot="settings-dialog-nav"
+      data-fade-start={edges.start || undefined}
+      data-fade-end={edges.end || undefined}
+      style={{ maskImage: fadeMask(edges) }}
       className="bg-muted/40 flex [scrollbar-width:none] gap-0.5 overflow-x-auto border-b p-2 sm:flex-col sm:overflow-x-visible sm:border-r sm:border-b-0 [&::-webkit-scrollbar]:hidden"
     >
       {sections.map(({ key, label: itemLabel, icon: Icon }) => (

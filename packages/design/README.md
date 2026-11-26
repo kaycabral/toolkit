@@ -95,7 +95,6 @@ with `overflowLabel`). Without `max` it renders every child, as before.
 </AvatarGroup>
 ```
 
-
 ### Status
 
 `StatusDot` is a small status indicator: `tone` (`success`, `warning`,
@@ -113,7 +112,6 @@ it says the status; without one it is decorative (`aria-hidden`).
 `Badge` has the same tones as tinted variants for status text:
 `<Badge variant="success">Ativo</Badge>` (`warning`, `info`, and the existing
 `destructive`, `secondary` for neutral).
-
 
 ### Button group
 

@@ -1,5 +1,5 @@
 import { expectNoA11yViolations } from '@cbrl/testing/a11y'
-import { act, render, renderHook, screen } from '@testing-library/react'
+import { act, fireEvent, render, renderHook, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -34,6 +34,24 @@ describe('SettingsDialog', () => {
     expect(onValueChange).toHaveBeenCalledWith('billing')
     expect(screen.getByRole('heading', { name: 'Billing' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Billing' })).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('fades only the nav edges that hide sections (phone strip)', () => {
+    render(<SettingsDialog defaultOpen sections={SECTIONS} navLabel="Seções" />)
+    const nav = screen.getByRole('navigation', { name: 'Seções' })
+    expect(nav).not.toHaveAttribute('data-fade-end')
+    expect(nav.style.maskImage).toBe('')
+    // jsdom has no layout: a 120px strip over 300px of sections.
+    Object.defineProperty(nav, 'clientWidth', { configurable: true, value: 120 })
+    Object.defineProperty(nav, 'scrollWidth', { configurable: true, value: 300 })
+    fireEvent.scroll(nav)
+    expect(nav).toHaveAttribute('data-fade-end')
+    expect(nav).not.toHaveAttribute('data-fade-start')
+    expect(nav.style.maskImage).toContain('transparent 100%')
+    nav.scrollLeft = 180
+    fireEvent.scroll(nav)
+    expect(nav).toHaveAttribute('data-fade-start')
+    expect(nav).not.toHaveAttribute('data-fade-end')
   })
 
   it('follows the controlled value and custom title', () => {
