@@ -39,6 +39,22 @@ import { ThemeProvider, Toaster } from '@cbrl/design'
 </ThemeProvider>
 ```
 
+### Surfaces and elevation
+
+Light mode paints the page (`--background`) and the sidebar a soft gray, and
+cards and popovers white, so content surfaces stand out. In dark mode the
+popover is a step lighter than the card (shadows barely show on dark). Use
+`shadow-popup` for floating surfaces that sit over content (event popups,
+detail cards):
+
+```tsx
+<div className="bg-popover text-popover-foreground shadow-popup rounded-xl">…</div>
+```
+
+Prefer `bg-card` (not `bg-background`) for anything that must match the card it
+sits on. To keep an all-white page, redefine `--background` and `--sidebar` in
+your `:root`.
+
 ## Usage
 
 ```tsx
