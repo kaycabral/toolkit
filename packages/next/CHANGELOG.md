@@ -1,5 +1,11 @@
 # @cbrl/next
 
+## 0.2.0
+
+### Minor Changes
+
+- [#58](https://github.com/kaycabral/toolkit/pull/58) [`5d308cd`](https://github.com/kaycabral/toolkit/commit/5d308cd16f83243ced011ea809e01198bead4682) Thanks [@kaycabral](https://github.com/kaycabral)! - `readBackend(read, { label, timeoutMs?, logger? })` in `@cbrl/next/server`: runs a server-side backend read with a timeout and returns `{ ok: true, data } | { ok: false }`, logging failures with `@cbrl/log`, so an unavailable backend degrades the page instead of crashing it. Adds `@cbrl/log` as a dependency.
+
 ## 0.1.1
 
 ### Patch Changes

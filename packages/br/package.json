@@ -1,6 +1,6 @@
 {
   "name": "@cbrl/br",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Framework-free Brazilian domain utilities: phone and WhatsApp links, BRL money, CPF/CNPJ and CEP with a BrasilAPI lookup.",
   "license": "MIT",
   "author": "Kayron Cabral",
