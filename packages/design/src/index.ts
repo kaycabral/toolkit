@@ -180,6 +180,11 @@ export { Popover, PopoverContent, PopoverTrigger } from './components/popover'
 export { ScrollArea, ScrollBar } from './components/scroll-area'
 export { Separator } from './components/separator'
 export { SettingRow, SettingRowGroup } from './components/setting-row'
+export {
+  SettingsDialog,
+  type SettingsDialogProps,
+  type SettingsDialogSection,
+} from './components/settings-dialog'
 export { SettingsSection } from './components/settings-section'
 export {
   Sheet,
@@ -219,5 +224,6 @@ export {
 } from './components/sidebar'
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './components/tooltip'
 export { useElementSize, type ElementSize } from './hooks/use-element-size'
+export { useHashSection, type HashSection } from './hooks/use-hash-section'
 export { useIsMobile } from './hooks/use-mobile'
 export { useScrollStrip, type ScrollStripEdges } from './hooks/use-scroll-strip'
