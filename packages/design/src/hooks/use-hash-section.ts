@@ -5,7 +5,7 @@ import * as React from 'react'
 export type HashSection<K extends string> = {
   /** Section in `#<prefix>/<section>`, or null when the hash doesn't address one. */
   section: K | null
-  /** Points the hash at a section (replaceState: no history entry). */
+  /** Points the hash at a section (replaceState keeping `history.state`: no history entry). */
   open: (section: K) => void
   /** Clears the hash, keeping path and query (replaceState). */
   close: () => void
@@ -36,21 +36,41 @@ export function useHashSection(prefix: string, keys?: readonly string[]): HashSe
   React.useEffect(() => {
     const allowed = keysId === undefined ? undefined : keysId.split('\u0000')
     const sync = () => setSection(parse(window.location.hash, prefix, allowed))
+    const onHashChange = () => {
+      // Next.js App Router: a fragment-only navigation (plain `<a href="#…">`,
+      // typing the URL) doesn't go through the router, and its HistoryUpdater
+      // then rewrites history with its stored URL (without the hash), closing
+      // the section right away. Re-stating the current URL through
+      // replaceState (Next patches it) makes the router adopt it. Elsewhere it
+      // is a no-op: same URL, same state.
+      if (window.location.hash.startsWith(`#${prefix}/`)) {
+        window.history.replaceState(window.history.state, '', window.location.href)
+      }
+      sync()
+    }
     sync()
-    window.addEventListener('hashchange', sync)
-    return () => window.removeEventListener('hashchange', sync)
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
   }, [prefix, keysId])
 
   const open = React.useCallback(
     (next: string) => {
-      window.history.replaceState(null, '', `#${prefix}/${encodeURIComponent(next)}`)
+      window.history.replaceState(
+        window.history.state,
+        '',
+        `#${prefix}/${encodeURIComponent(next)}`,
+      )
       setSection(next)
     },
     [prefix],
   )
 
   const close = React.useCallback(() => {
-    window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    window.history.replaceState(
+      window.history.state,
+      '',
+      window.location.pathname + window.location.search,
+    )
     setSection(null)
   }, [])
 

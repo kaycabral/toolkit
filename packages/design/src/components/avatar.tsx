@@ -73,7 +73,7 @@ type AvatarGroupProps = React.ComponentProps<'div'> & {
    * `AvatarGroupCount` reading "+K". Omit to render every child.
    */
   max?: number
-  /** Accessible name of the "+K" count. Defaults to `"K more"`. */
+  /** Accessible name of the "+K" count. Defaults to `"+K"` (language-neutral); pass a localized label. */
   overflowLabel?: (hidden: number) => string
 }
 
@@ -92,7 +92,7 @@ function AvatarGroup({ className, max, overflowLabel, children, ...props }: Avat
     >
       {hidden > 0 ? items.slice(0, limit) : children}
       {hidden > 0 ? (
-        <AvatarGroupCount role="img" aria-label={overflowLabel?.(hidden) ?? `${hidden} more`}>
+        <AvatarGroupCount role="img" aria-label={overflowLabel?.(hidden) ?? `+${hidden}`}>
           +{hidden}
         </AvatarGroupCount>
       ) : null}

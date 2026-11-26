@@ -9,10 +9,10 @@ import { cn } from '../lib/cn'
 const statusDotVariants = cva('relative inline-flex shrink-0 rounded-full', {
   variants: {
     tone: {
-      success: 'bg-emerald-500',
-      warning: 'bg-amber-500',
+      success: 'bg-emerald-500 dark:bg-emerald-400',
+      warning: 'bg-amber-500 dark:bg-amber-400',
       destructive: 'bg-destructive',
-      info: 'bg-sky-500',
+      info: 'bg-sky-500 dark:bg-sky-400',
       muted: 'bg-muted-foreground/50',
     },
     size: {
