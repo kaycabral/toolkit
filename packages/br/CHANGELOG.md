@@ -1,5 +1,11 @@
 # @cbrl/br
 
+## 0.2.0
+
+### Minor Changes
+
+- [#57](https://github.com/kaycabral/toolkit/pull/57) [`ae61bd6`](https://github.com/kaycabral/toolkit/commit/ae61bd6649c3c43eda359b5f3c6875e39f45b614) Thanks [@kaycabral](https://github.com/kaycabral)! - Money: `formatAmountFromCents` (no currency symbol), signed variants `formatSignedAmountFromCents`/`formatSignedBRLFromCents` (`+` on positives), `parseBRLInput`/`parseSignedBRLInput` (pt-BR input → integer cents) and `maskBRLInput` (bank-app style input mask).
+
 ## 0.1.0
 
 ### Minor Changes

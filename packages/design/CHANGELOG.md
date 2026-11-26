@@ -1,5 +1,21 @@
 # @cbrl/design
 
+## 0.6.0
+
+### Minor Changes
+
+- [#64](https://github.com/kaycabral/toolkit/pull/64) [`baebc85`](https://github.com/kaycabral/toolkit/commit/baebc852328820171a5aaede3c87595ad2f7a925) Thanks [@kaycabral](https://github.com/kaycabral)! - AvatarGroup: optional `max` renders the first N avatars and collapses the rest into a "+K" `AvatarGroupCount` (`overflowLabel` sets its accessible name). Without `max` nothing changes.
+
+- [#64](https://github.com/kaycabral/toolkit/pull/64) [`baebc85`](https://github.com/kaycabral/toolkit/commit/baebc852328820171a5aaede3c87595ad2f7a925) Thanks [@kaycabral](https://github.com/kaycabral)! - `ButtonGroup`, `ButtonGroupSeparator`, `ButtonGroupText` and `buttonGroupVariants` (shadcn's button-group): joined borders, focus on top, horizontal or vertical. README shows a split button.
+
+- [#64](https://github.com/kaycabral/toolkit/pull/64) [`baebc85`](https://github.com/kaycabral/toolkit/commit/baebc852328820171a5aaede3c87595ad2f7a925) Thanks [@kaycabral](https://github.com/kaycabral)! - Tabs: `TabsList` never hides the active tab (horizontal scroll without scrollbar, edge fade masks only where tabs are hidden, active tab revealed on mount/resize/change; reduced motion is instant). On by default for both variants, opt out with `scrollable={false}`. New hooks `useScrollStrip` and `useElementSize`.
+
+- [#64](https://github.com/kaycabral/toolkit/pull/64) [`baebc85`](https://github.com/kaycabral/toolkit/commit/baebc852328820171a5aaede3c87595ad2f7a925) Thanks [@kaycabral](https://github.com/kaycabral)! - `SettingsDialog`: settings-modal shell (section nav as a column from `sm` or a scrolling strip on phones, header, scrolling content; controlled or uncontrolled section) and `useHashSection(prefix, keys?)` to route it through `#prefix/section`.
+
+- [#64](https://github.com/kaycabral/toolkit/pull/64) [`baebc85`](https://github.com/kaycabral/toolkit/commit/baebc852328820171a5aaede3c87595ad2f7a925) Thanks [@kaycabral](https://github.com/kaycabral)! - `StatusDot` (tones `success`/`warning`/`destructive`/`info`/`muted`, sizes, optional `pulse`, `label` for an accessible name) and `success`/`warning`/`info` status variants on `Badge`.
+
+- [#64](https://github.com/kaycabral/toolkit/pull/64) [`baebc85`](https://github.com/kaycabral/toolkit/commit/baebc852328820171a5aaede3c87595ad2f7a925) Thanks [@kaycabral](https://github.com/kaycabral)! - Surface tokens: light mode paints the page (`--background`) and `--sidebar` a soft gray (`oklch(0.97 0 0)`) so white cards and popovers stand out; dark `--popover` is lighter than `--card` (`oklch(0.24 0 0)`); new `shadow-popup` elevation token. Visual change for every app: to keep the all-white light page, redefine `--background`/`--sidebar` in the app's `:root`.
+
 ## 0.5.0
 
 ### Minor Changes

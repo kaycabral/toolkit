@@ -1,6 +1,6 @@
 {
   "name": "@cbrl/next",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Next.js 16 building blocks: security headers with a reporting CSP, commit SHA, dev origins, health and CSP-report route handlers, safeNext.",
   "license": "MIT",
   "author": "Kayron Cabral",
