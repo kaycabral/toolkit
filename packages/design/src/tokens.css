@@ -16,7 +16,12 @@
  */
 
 :root {
-  --background: oklch(1 0 0);
+  /*
+   * Surfaces (light): the page and the sidebar around it are a soft gray so
+   * white cards and popups stand out from it (like shadcn's own site). Card
+   * and popover stay white.
+   */
+  --background: oklch(0.97 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -40,7 +45,7 @@
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
+  --sidebar: oklch(0.97 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
@@ -59,7 +64,8 @@
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  /* Floating surfaces read lighter than the cards they float over. */
+  --popover: oklch(0.24 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
@@ -89,6 +95,17 @@
 
   --wa: oklch(0.68 0.16 152);
   --wa-foreground: oklch(0.99 0 0);
+}
+
+/*
+ * Elevation for floating surfaces (popups over content, Google Calendar
+ * style): `shadow-popup`. Mode-independent; dark mode relies on the lighter
+ * `--popover` for separation since shadows barely show there.
+ */
+@theme {
+  --shadow-popup:
+    0 24px 38px 3px rgb(0 0 0 / 0.14), 0 9px 46px 8px rgb(0 0 0 / 0.12),
+    0 11px 15px -7px rgb(0 0 0 / 0.2);
 }
 
 @theme inline {
