@@ -49,6 +49,12 @@ export {
 } from './components/breadcrumb'
 export { Button, buttonVariants } from './components/button'
 export {
+  ButtonGroup,
+  ButtonGroupSeparator,
+  ButtonGroupText,
+  buttonGroupVariants,
+} from './components/button-group'
+export {
   Card,
   CardAction,
   CardContent,

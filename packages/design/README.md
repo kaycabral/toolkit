@@ -98,6 +98,46 @@ it says the status; without one it is decorative (`aria-hidden`).
 `<Badge variant="success">Ativo</Badge>` (`warning`, `info`, and the existing
 `destructive`, `secondary` for neutral).
 
+
+### Button group
+
+`ButtonGroup` joins related buttons into one control (shadcn's button-group):
+inner borders and radii collapse, the focused button rises above its
+neighbors, and `orientation="vertical"` stacks them. `ButtonGroupSeparator`
+draws a divider (useful between same-variant buttons) and `ButtonGroupText`
+holds a label or addon. Nest groups to space them (`gap-2`).
+
+Split button (main action + menu of related actions):
+
+```tsx
+import {
+  Button,
+  ButtonGroup,
+  ButtonGroupSeparator,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@cbrl/design'
+import { ChevronDown } from 'lucide-react'
+
+;<ButtonGroup aria-label="Salvar">
+  <Button onClick={save}>Salvar</Button>
+  <ButtonGroupSeparator />
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button size="icon" aria-label="Mais opções de salvar">
+        <ChevronDown />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end">
+      <DropdownMenuItem onSelect={saveAsDraft}>Salvar como rascunho</DropdownMenuItem>
+      <DropdownMenuItem onSelect={saveAndNew}>Salvar e criar outro</DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+</ButtonGroup>
+```
+
 ### App shell
 
 `AppShell` renders the whole authenticated layout (collapsible sidebar with brand,
