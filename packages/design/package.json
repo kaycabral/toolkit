@@ -1,6 +1,6 @@
 {
   "name": "@cbrl/design",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Design system on Radix + Tailwind v4: shadcn-style components, layout shells and design tokens with an overridable brand accent.",
   "license": "MIT",
   "author": "Kayron Cabral",

@@ -1,5 +1,11 @@
 # @cbrl/design
 
+## 0.6.1
+
+### Patch Changes
+
+- [#65](https://github.com/kaycabral/toolkit/pull/65) [`3adc0ab`](https://github.com/kaycabral/toolkit/commit/3adc0abc29d74c63490f4fe6efc4469c3b7e3ffb) Thanks [@kaycabral](https://github.com/kaycabral)! - Restore visible sidebar hover: light `--background` and `--sidebar` go to `oklch(0.985 0 0)`, a step lighter than `--accent`/`--sidebar-accent` (`0.97`), which they had matched since 0.6.0. Cards and popovers stay white.
+
 ## 0.6.0
 
 ### Minor Changes
