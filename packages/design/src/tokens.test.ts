@@ -22,10 +22,19 @@ function lightness(scope: string, name: string): number {
 describe('surface tokens', () => {
   it('light: gray page and sidebar, white card and popover', () => {
     const light = block(':root')
-    expect(token(light, 'background')).toBe('oklch(0.97 0 0)')
-    expect(token(light, 'sidebar')).toBe('oklch(0.97 0 0)')
+    expect(token(light, 'background')).toBe('oklch(0.985 0 0)')
+    expect(token(light, 'sidebar')).toBe('oklch(0.985 0 0)')
     expect(token(light, 'card')).toBe('oklch(1 0 0)')
     expect(token(light, 'popover')).toBe('oklch(1 0 0)')
+  })
+
+  // Hover/active fills must differ from the surface they sit on, or the
+  // feedback disappears (sidebar hover was invisible when both were 0.97).
+  it.each([':root', '.dark'])('%s: hover fills and cards differ from their surface', (sel) => {
+    const scope = block(sel)
+    expect(token(scope, 'sidebar')).not.toBe(token(scope, 'sidebar-accent'))
+    expect(token(scope, 'background')).not.toBe(token(scope, 'accent'))
+    expect(token(scope, 'background')).not.toBe(token(scope, 'card'))
   })
 
   it('dark: popover lighter than card, card lighter than page', () => {

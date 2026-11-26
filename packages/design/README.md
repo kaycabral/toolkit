@@ -41,8 +41,10 @@ import { ThemeProvider, Toaster } from '@cbrl/design'
 
 ### Surfaces and elevation
 
-Light mode paints the page (`--background`) and the sidebar a soft gray, and
-cards and popovers white, so content surfaces stand out. In dark mode the
+Light mode paints the page (`--background`) and the sidebar a soft gray
+(`oklch(0.985 0 0)`, a step lighter than the `0.97` hover fills `--accent` and
+`--sidebar-accent`, so hover stays visible), and cards and popovers white, so
+content surfaces stand out. In dark mode the
 popover is a step lighter than the card (shadows barely show on dark). Use
 `shadow-popup` for floating surfaces that sit over content (event popups,
 detail cards):
