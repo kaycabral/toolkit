@@ -125,6 +125,34 @@ describe('useHashSection', () => {
     )
   })
 
+  it('keeps history.state in open/close and re-states fragment navigations', () => {
+    window.history.replaceState({ router: 'tree' }, '', '/page')
+    const { result } = renderHook(() => useHashSection('settings'))
+    act(() => result.current.open('profile'))
+    expect(window.history.state).toEqual({ router: 'tree' })
+    act(() => result.current.close())
+    expect(window.history.state).toEqual({ router: 'tree' })
+
+    const replaceState = vi.spyOn(window.history, 'replaceState')
+    act(() => {
+      window.location.hash = '#other/x'
+      window.dispatchEvent(new HashChangeEvent('hashchange'))
+    })
+    expect(replaceState).not.toHaveBeenCalled()
+    act(() => {
+      window.location.hash = '#settings/billing'
+      window.dispatchEvent(new HashChangeEvent('hashchange'))
+    })
+    // Setting location.hash pushed a new entry; the hook re-states it as is.
+    expect(replaceState).toHaveBeenCalledWith(
+      window.history.state,
+      '',
+      expect.stringMatching(/\/page#settings\/billing$/),
+    )
+    expect(result.current.section).toBe('billing')
+    replaceState.mockRestore()
+  })
+
   it('drives a SettingsDialog end to end', async () => {
     window.history.replaceState(null, '', '/#settings/billing')
     function App() {

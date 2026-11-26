@@ -49,7 +49,7 @@ describe('Avatar', () => {
     expect(screen.getByText('A')).toBeInTheDocument()
     expect(screen.getByText('B')).toBeInTheDocument()
     expect(screen.queryByText('C')).not.toBeInTheDocument()
-    expect(screen.getByRole('img', { name: '3 more' })).toHaveTextContent('+3')
+    expect(screen.getByRole('img', { name: '+3' })).toHaveTextContent('+3')
     await expectNoA11yViolations(container)
   })
 

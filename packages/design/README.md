@@ -83,8 +83,8 @@ or `'?'`.
 ### Avatar group
 
 `AvatarGroup` overlaps its avatars. Pass `max` to show the first N and collapse
-the rest into a "+K" `AvatarGroupCount` (accessible name `"K more"`, override
-with `overflowLabel`). Without `max` it renders every child, as before.
+the rest into a "+K" `AvatarGroupCount` (accessible name `"+K"`, language-neutral;
+pass a localized `overflowLabel`). Without `max` it renders every child, as before.
 
 ```tsx
 <AvatarGroup max={3} overflowLabel={(n) => `mais ${n} pessoas`}>
@@ -266,6 +266,12 @@ export function SettingsModal() {
 }
 // Anywhere: <a href="#settings/billing">Cobrança</a>
 ```
+
+Next.js App Router: a fragment-only navigation (plain `<a href="#…">`, a typed
+URL) bypasses the router, whose history sync then rewrites the URL without the
+hash and would close the dialog at once. The hook re-states the URL through
+`history.replaceState` on `hashchange` (keeping `history.state`, also in
+`open`/`close`) so the router adopts it; outside Next this is a no-op.
 
 Uncontrolled use: `defaultOpen`/`defaultValue`. Slots: `settings-dialog`,
 `settings-dialog-nav`, `settings-dialog-content`.
