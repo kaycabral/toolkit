@@ -19,9 +19,10 @@
   /*
    * Surfaces (light): the page and the sidebar around it are a soft gray so
    * white cards and popups stand out from it (like shadcn's own site). Card
-   * and popover stay white.
+   * and popover stay white. Kept a step lighter than `--accent` /
+   * `--sidebar-accent` (0.97) so hover and active fills stay visible.
    */
-  --background: oklch(0.97 0 0);
+  --background: oklch(0.985 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -45,7 +46,7 @@
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --sidebar: oklch(0.97 0 0);
+  --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
