@@ -1,5 +1,11 @@
 # @cbrl/design
 
+## 0.6.2
+
+### Patch Changes
+
+- [#67](https://github.com/kaycabral/toolkit/pull/67) [`d12da92`](https://github.com/kaycabral/toolkit/commit/d12da92f4a66080f692aa071e8b9ef65107e64ec) Thanks [@kaycabral](https://github.com/kaycabral)! - `useHashSection` keeps `history.state` and re-states fragment-only navigations so the Next.js App Router no longer strips the hash and closes the section. `StatusDot` gets lighter dark-mode tones (success/warning/info). `AvatarGroup`'s default "+K" accessible name is now language-neutral (`"+K"` instead of `"K more"`).
+
 ## 0.6.1
 
 ### Patch Changes
