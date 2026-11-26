@@ -36,6 +36,49 @@ describe('Avatar', () => {
     expect(screen.getByText('+3')).toBeInTheDocument()
   })
 
+  it('collapses children past max into a +K count', async () => {
+    const { container } = render(
+      <AvatarGroup max={2}>
+        {['A', 'B', 'C', 'D', 'E'].map((name) => (
+          <Avatar key={name}>
+            <AvatarFallback>{name}</AvatarFallback>
+          </Avatar>
+        ))}
+      </AvatarGroup>,
+    )
+    expect(screen.getByText('A')).toBeInTheDocument()
+    expect(screen.getByText('B')).toBeInTheDocument()
+    expect(screen.queryByText('C')).not.toBeInTheDocument()
+    expect(screen.getByRole('img', { name: '3 more' })).toHaveTextContent('+3')
+    await expectNoA11yViolations(container)
+  })
+
+  it('renders every child when they fit max, with a custom count label', () => {
+    const { rerender } = render(
+      <AvatarGroup max={3}>
+        <Avatar>
+          <AvatarFallback>A</AvatarFallback>
+        </Avatar>
+        {null}
+        <Avatar>
+          <AvatarFallback>B</AvatarFallback>
+        </Avatar>
+      </AvatarGroup>,
+    )
+    expect(screen.queryByText(/^\+/)).not.toBeInTheDocument()
+    rerender(
+      <AvatarGroup max={1} overflowLabel={(n) => `mais ${n}`}>
+        <Avatar>
+          <AvatarFallback>A</AvatarFallback>
+        </Avatar>
+        <Avatar>
+          <AvatarFallback>B</AvatarFallback>
+        </Avatar>
+      </AvatarGroup>,
+    )
+    expect(screen.getByRole('img', { name: 'mais 1' })).toHaveTextContent('+1')
+  })
+
   it('has no accessibility violations', async () => {
     const { container } = render(
       <Avatar>
