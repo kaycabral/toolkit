@@ -38,6 +38,9 @@
     "check:package": "node ../../scripts/check-package.mjs --types",
     "lint": "eslint ."
   },
+  "dependencies": {
+    "@cbrl/log": "workspace:^"
+  },
   "peerDependencies": {
     "next": "^16.0.0"
   },

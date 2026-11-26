@@ -136,6 +136,25 @@ terms, and violation logs must not become a store of personal data (LGPD). The
 endpoint is public by design (browsers send reports without credentials), so make
 sure your `proxy.ts` does not require a session on it.
 
+## `readBackend`
+
+Server-side reads (database, auth) that degrade the page instead of crashing it
+when the backend is unavailable:
+
+```tsx
+import { readBackend } from '@cbrl/next/server'
+
+const result = await readBackend(() => loadDashboard(scope), { label: 'dashboard' })
+if (!result.ok) return <BackendUnavailable /> // e.g. a "Try again" state
+return <Dashboard data={result.data} />
+```
+
+Returns `{ ok: true, data }` or `{ ok: false }`. A read that throws, rejects or
+takes longer than `timeoutMs` (4000 by default, `BACKEND_READ_TIMEOUT_MS`) counts
+as unavailable and is logged with `@cbrl/log` as `backend read unavailable`
+(`{ read: label, err }`; pass `logger` to use another). The label names the read;
+never put personal data in it. A timed-out read is abandoned, not cancelled.
+
 ## `safeNext`
 
 ```ts
