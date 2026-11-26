@@ -42,6 +42,35 @@ formatBRLFromCentsRounded(123456) // 'R$ 1.235'
 formatBRL(1234.5) // 'R$ 1.234,50'
 ```
 
+Signed and symbol-less variants (dense grids, statements), all from integer cents:
+
+```ts
+import {
+  formatAmountFromCents,
+  formatSignedAmountFromCents,
+  formatSignedBRLFromCents,
+} from '@cbrl/br/money'
+
+formatAmountFromCents(1094761) // '10.947,61'
+formatSignedAmountFromCents(1094761) // '+10.947,61'
+formatSignedBRLFromCents(-1000) // '-R$ 10,00' (positive gets '+', zero no sign)
+```
+
+Negatives use the ASCII hyphen-minus that `Intl.NumberFormat` emits (copy-paste
+and parse friendly); swap in `−` (U+2212) at render time if you want the
+typographic glyph.
+
+Inputs: a bank-app style mask and a parser back to cents.
+
+```ts
+import { maskBRLInput, parseBRLInput, parseSignedBRLInput } from '@cbrl/br/money'
+
+maskBRLInput('123456') // '1.234,56' (digits shift in from the cents side; 0 → '')
+parseBRLInput('1.234,56') // 123456 (also '1234,56', '1234.56', '1.234', 'R$ 50')
+parseBRLInput('abc') // null
+parseSignedBRLInput('-10,50') // -1050 (accepts '-' or '−')
+```
+
 The space after `R$` is a non-breaking space (`\u00a0`), as `Intl.NumberFormat`
 produces it.
 
