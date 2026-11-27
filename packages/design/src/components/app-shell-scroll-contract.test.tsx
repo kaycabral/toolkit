@@ -46,6 +46,16 @@ describe('AppShell inner-scroll contract', () => {
     expect(rail).not.toContain('h-lvh')
   })
 
+  it('drops the always-on document scrollbar when the shell is mounted', () => {
+    // globals.css forces `html { overflow-y: scroll }` for document-scroll pages;
+    // under the shell the document never scrolls, so that bar would be a dead
+    // second scrollbar beside `app-scroll`.
+    const globals = read('../globals.css')
+    expect(globals).toMatch(
+      /html:has\(\[data-slot='sidebar-wrapper'\]\)\s*\{\s*overflow-y:\s*hidden;\s*\}/,
+    )
+  })
+
   it('exposes a single content scroll container that contains its own overscroll', () => {
     expect(appShell).toContain('data-slot="app-scroll"')
     const scroller = appShell.match(/data-slot="app-scroll"[\s\S]*?className="([^"]*)"/)?.[1] ?? ''

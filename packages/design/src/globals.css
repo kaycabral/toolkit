@@ -40,6 +40,14 @@
      */
     overflow-y: scroll;
   }
+  /*
+   * Com o app shell (sidebar-wrapper: h-dvh overflow-hidden) o documento nunca
+   * rola — quem rola é o `app-scroll`. Forçar a barra no html ali desenha uma
+   * segunda barra, morta, ao lado da real.
+   */
+  html:has([data-slot='sidebar-wrapper']) {
+    overflow-y: hidden;
+  }
 }
 
 /*
