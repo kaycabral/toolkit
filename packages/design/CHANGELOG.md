@@ -1,5 +1,11 @@
 # @cbrl/design
 
+## 0.6.3
+
+### Patch Changes
+
+- [#70](https://github.com/kaycabral/toolkit/pull/70) [`cfe4d09`](https://github.com/kaycabral/toolkit/commit/cfe4d09511303d2260c5483a505653a6318a2a6a) Thanks [@kaycabral](https://github.com/kaycabral)! - Drop the always-on `html` scrollbar when the app shell is mounted: the shell scrolls inside `app-scroll`, so the forced document scrollbar showed up as a dead second bar.
+
 ## 0.6.2
 
 ### Patch Changes
