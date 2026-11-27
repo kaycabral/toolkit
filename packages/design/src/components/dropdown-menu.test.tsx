@@ -71,6 +71,17 @@ describe('DropdownMenu', () => {
     expect(screen.getByRole('menuitem', { name: 'Mais' })).toBeInTheDocument()
   })
 
+  it('fits its items instead of locking to the trigger width (icon triggers stop wrapping labels)', () => {
+    render(<Menu />)
+    // At least as wide as the trigger (and 8rem), growing to its content within the viewport.
+    expect(screen.getByRole('menu')).toHaveClass(
+      'w-max',
+      'min-w-[max(8rem,var(--radix-dropdown-menu-trigger-width))]',
+      'max-w-(--radix-dropdown-menu-content-available-width)',
+    )
+    expect(screen.getByRole('menu')).not.toHaveClass('w-(--radix-dropdown-menu-trigger-width)')
+  })
+
   it('has no accessibility violations while open', async () => {
     render(<Menu />)
     await expectNoA11yViolations(document.body)
