@@ -1,0 +1,124 @@
+# Keeps the Dependabot auto-merge chain moving. The ruleset merges only PRs
+# whose branch is up to date with main, so once one update merges, every other
+# open Dependabot PR falls BEHIND and dependabot-auto-merge.yml can't merge it.
+# After main moves, this asks Dependabot to rebase the oldest BEHIND PR of an
+# auto-merge group; its CI runs, it merges, main moves again, and the next one
+# follows. One at a time, so each rebase isn't wasted by the next merge.
+#
+# Dependabot only obeys `@dependabot rebase` from someone with push access. The
+# GITHUB_TOKEN doesn't count, and neither does a GitHub App without
+# `Contents: write`, so the comment is posted by a dedicated App (see the README
+# for its installation). Its token is minted only when there is a PR to nudge.
+#
+# Caller (.github/workflows/dependabot-rebase.yml in the app):
+#
+#   on:
+#     workflow_run:
+#       workflows: [Main]
+#       types: [completed]
+#       branches: [main]
+#     workflow_dispatch:
+#   permissions: {}
+#   jobs:
+#     rebase:
+#       uses: kaycabral/toolkit/.github/workflows/dependabot-rebase.yml@<sha>
+#       permissions: { pull-requests: read }
+#       secrets:
+#         app-id: ${{ vars.DEPENDABOT_REBASE_APP_ID || secrets.DEPENDABOT_REBASE_APP_ID }}
+#         app-private-key: ${{ secrets.DEPENDABOT_REBASE_APP_PRIVATE_KEY }}
+#
+# Triggering on the main workflow (not on `push`) also covers the merges made by
+# dependabot-auto-merge.yml, which use the GITHUB_TOKEN and never fire `push`.
+name: Dependabot rebase
+
+on:
+  workflow_call:
+    inputs:
+      groups:
+        description: Regex alternation of Dependabot group names that may merge unattended (same as dependabot-auto-merge.yml).
+        type: string
+        required: false
+        default: minor-and-patch|actions
+      retry-after-minutes:
+        description: Ask again when Dependabot hasn't rebased this long after the previous request.
+        type: number
+        required: false
+        default: 60
+    secrets:
+      app-id:
+        description: ID of the GitHub App that posts the comment (Pull requests write + Contents write).
+        required: true
+      app-private-key:
+        description: Private key of that GitHub App.
+        required: true
+
+permissions: {}
+
+jobs:
+  rebase:
+    name: Rebase oldest behind Dependabot PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Find the oldest behind PR
+        id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          MERGE_GROUPS: ${{ inputs.groups }}
+        run: |
+          prs=$(gh api "repos/$REPO/pulls?state=open&base=main&sort=created&direction=asc&per_page=100" \
+            --jq '.[] | select(.user.login == "dependabot[bot]") | "\(.number) \(.head.ref)"')
+          while read -r number branch; do
+            [ -n "$number" ] || continue
+            [[ "$branch" =~ ^dependabot/[^/]+/(.+/)?($MERGE_GROUPS)-[0-9a-f]+$ ]] || continue
+            # mergeable_state is computed lazily; the first read may say "unknown".
+            state=unknown
+            for _ in 1 2 3; do
+              state=$(gh api "repos/$REPO/pulls/$number" --jq .mergeable_state)
+              [ "$state" != unknown ] && break
+              sleep 5
+            done
+            if [ "$state" = behind ]; then
+              echo "number=$number" >>"$GITHUB_OUTPUT"
+              echo "Oldest behind auto-merge PR: #$number ($branch)"
+              exit 0
+            fi
+          done <<<"$prs"
+          echo "::notice::No behind Dependabot PR in an auto-merge group."
+
+      - name: Mint App token
+        if: steps.find.outputs.number
+        id: app
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
+        with:
+          app-id: ${{ secrets.app-id }}
+          private-key: ${{ secrets.app-private-key }}
+          permission-pull-requests: write
+
+      - name: Ask Dependabot to rebase
+        if: steps.find.outputs.number
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ steps.find.outputs.number }}
+          BOT: ${{ steps.app.outputs.app-slug }}[bot]
+          RETRY_AFTER: ${{ inputs.retry-after-minutes }}
+        run: |
+          # Dependabot rewrites the commit on rebase, so a request newer than the
+          # head commit is still pending; asking again would only add noise.
+          head_date=$(gh api "repos/$REPO/pulls/$NUMBER" --jq .head.sha |
+            xargs -I{} gh api "repos/$REPO/commits/{}" --jq .commit.committer.date)
+          last=$(gh api --paginate "repos/$REPO/issues/$NUMBER/comments?since=$head_date" \
+            --jq "[.[] | select(.user.login == \"$BOT\") | .created_at] | last // empty" | tail -n1)
+          if [ -n "$last" ]; then
+            age=$(( ($(date +%s) - $(date -d "$last" +%s)) / 60 ))
+            if [ "$age" -lt "$RETRY_AFTER" ]; then
+              echo "::notice::#$NUMBER already asked ${age}m ago; waiting for Dependabot."
+              exit 0
+            fi
+          fi
+          gh pr comment "$NUMBER" -R "$REPO" --body '@dependabot rebase'
+          echo "Asked Dependabot to rebase #$NUMBER"

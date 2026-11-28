@@ -61,10 +61,10 @@ jobs:
           OWNER: ${{ github.repository_owner }}
           BRANCH: ${{ github.event.workflow_run.head_branch }}
           SHA: ${{ github.event.workflow_run.head_sha }}
-          GROUPS: ${{ inputs.groups }}
+          MERGE_GROUPS: ${{ inputs.groups }}
           MAIN_WORKFLOW: ${{ inputs.main-workflow }}
         run: |
-          if ! [[ "$BRANCH" =~ ^dependabot/[^/]+/(.+/)?($GROUPS)-[0-9a-f]+$ ]]; then
+          if ! [[ "$BRANCH" =~ ^dependabot/[^/]+/(.+/)?($MERGE_GROUPS)-[0-9a-f]+$ ]]; then
             echo "::notice::'$BRANCH' is not an auto-merge group; it needs a human review."
             exit 0
           fi

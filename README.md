@@ -23,18 +23,35 @@ Also in this repo:
   (`kaycabral/toolkit/<path>@<sha>`, kept current by Dependabot's
   `github-actions` updates):
 
-  | Path                                                                                         | What it does                                                                               |
-  | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-  | [`.github/actions/setup`](.github/actions/setup/action.yml)                                  | pnpm + Node from `packageManager`/`.nvmrc`, store cache, frozen install                    |
-  | [`.github/actions/playwright`](.github/actions/playwright/action.yml)                        | Chromium + its system packages, both cached (offline `.deb` install on a hit)              |
-  | [`.github/actions/drizzle-migrations`](.github/actions/drizzle-migrations/action.yml)        | Journal consistency, schema change without migration, applied migrations are immutable     |
-  | [`.github/workflows/provenance.yml`](.github/workflows/provenance.yml)                       | On main: was this exact tree proven by a merged PR? Skips re-running checks when it was    |
-  | [`.github/workflows/dependabot-auto-merge.yml`](.github/workflows/dependabot-auto-merge.yml) | Merges trusted Dependabot groups after the PR gate is green, then starts the main workflow |
+  | Path                                                                                         | What it does                                                                                     |
+  | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+  | [`.github/actions/setup`](.github/actions/setup/action.yml)                                  | pnpm + Node from `packageManager`/`.nvmrc`, store cache, frozen install                          |
+  | [`.github/actions/playwright`](.github/actions/playwright/action.yml)                        | Chromium + its system packages, both cached (offline `.deb` install on a hit)                    |
+  | [`.github/actions/drizzle-migrations`](.github/actions/drizzle-migrations/action.yml)        | Journal consistency, schema change without migration, applied migrations are immutable           |
+  | [`.github/workflows/provenance.yml`](.github/workflows/provenance.yml)                       | On main: was this exact tree proven by a merged PR? Skips re-running checks when it was          |
+  | [`.github/workflows/dependabot-auto-merge.yml`](.github/workflows/dependabot-auto-merge.yml) | Merges trusted Dependabot groups after the PR gate is green, then starts the main workflow       |
+  | [`.github/workflows/dependabot-rebase.yml`](.github/workflows/dependabot-rebase.yml)         | After main moves, asks Dependabot to rebase the oldest BEHIND auto-merge PR (needs a GitHub App) |
 
   Each app keeps only its own composition: a `checks.yml` (which suites run), a
   `pull-request.yml` with the `CI passed` gate, a `main.yml` with its migration
   command, and `scorecard.yml` (the Scorecard action must live in the repo it
   scores).
+
+- **Dependabot rebase App**: `dependabot-rebase.yml` needs a GitHub App,
+  because Dependabot only obeys `@dependabot rebase` from someone with push
+  access (the `GITHUB_TOKEN` and read-only Apps are refused). One-time setup:
+  1. Create a GitHub App (no webhook) with repository permissions
+     **Pull requests: write**, **Contents: write** and Metadata: read, and
+     install it only on the repos that use the workflow (`cbrl-dependabot-rebase`).
+  2. In each app repo, add the variable (or secret) `DEPENDABOT_REBASE_APP_ID`
+     and the secret `DEPENDABOT_REBASE_APP_PRIVATE_KEY` (generate the key
+     straight into the secret; don't keep it on disk).
+  3. Add the caller from the header of
+     [`dependabot-rebase.yml`](.github/workflows/dependabot-rebase.yml), pinned
+     to a toolkit SHA.
+
+  `Contents: write` lets a leaked key push branches; the `main` ruleset (PR +
+  `CI passed`, no bypass) still guards production.
 
 - **Dependency updates**: copy [`templates/dependabot.yml`](templates/dependabot.yml)
   to the app unchanged. It runs from the workspace root only (per-workspace
