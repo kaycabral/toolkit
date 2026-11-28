@@ -6,7 +6,10 @@ description: Install the Playwright Chromium build and its system packages, both
 # every job (it once took 6 minutes on a slow mirror). That cache is keyed by OS
 # release + Playwright version, not by runner image version: images roll out
 # gradually, so parallel jobs land on different versions and a per-version key
-# would miss. A hit installs the packages offline.
+# would miss. A hit installs the packages offline through apt, which resolves
+# them against what the image already has and refuses as a whole when a cached
+# .deb does not fit (an image built on newer packages); `dpkg -i` would unpack
+# part of them and leave the system broken for the apt fallback.
 
 inputs:
   working-directory:
@@ -53,8 +56,9 @@ runs:
           shopt -s nullglob
           files=("$debs"/*.deb)
           echo "Installing ${#files[@]} cached packages offline"
-          if ! sudo dpkg -i "${files[@]}"; then
-            echo "::warning::Cached packages did not install; falling back to apt."
+          if ! sudo apt-get install -y --no-download "${files[@]}"; then
+            echo "::warning::Cached packages do not fit this runner image; falling back to apt."
+            sudo apt-get install -y -f
             pnpm exec playwright install-deps chromium
           fi
         else
